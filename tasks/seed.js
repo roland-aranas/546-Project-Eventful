@@ -25,6 +25,23 @@ const seed = async () => {
                 i.reviewList = [];
                 i.checkedInList = [];
                 i.registeredList = [];
+                delete i.guid;
+                delete i.parkids;
+                delete i.instructor;
+                delete i.categories;
+                delete i.pubDate;
+            }
+
+            for (const event of data) {
+                const location = {
+                    parknames: event.parknames ?? null,
+                    location: event.location ?? null,
+                    coordinates: event.coordinates ?? null
+                };
+
+                event.location = location;
+                delete event.parknames;
+                delete event.coordinates;
             }
 
             await eventCollection.deleteMany({});
