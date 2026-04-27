@@ -1,5 +1,6 @@
 import {ObjectId} from 'mongodb';
-import { buildLocationObject } from './location.js';
+import {events} from '../config/mongoCollections.js';
+// import { buildLocationObject } from './location.js';
 
 
 async function getAllEvents() {
@@ -23,86 +24,101 @@ async function createEvent({
     title,
     link,
     description,
-    registration_url,
-    registration_description,
-    parknames,
-    startdate,
-    enddate,
-    contact_phone,
+    registrationUrl,
+    registrationDescription,
+    startDate,
+    endDate,
+    startTime,
+    endTime,
+    contactPhone,
     location,
-    coordinates,
-    image
+    image,
+    cost,
+    eventType
 }) {
-    if (!title || typeof title !== 'string') {
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
         throw 'Error: You must provide a valid title';
     }
-    if (!link || typeof link !== 'string') {
+    if (!link || typeof link !== 'string' || link.trim().length === 0) {
         throw 'Error: You must provide a valid link';
     }
-    if (!description || typeof description !== 'string') {
+    if (!description || typeof description !== 'string' || description.trim().length === 0) {
         throw 'Error: You must provide a valid description';
     }
-    if (!registration_url || typeof registration_url !== 'string') {
-        throw 'Error: You must provide a valid registration_url';
+    if (!startDate || typeof startDate !== 'string' || startDate.trim().length === 0) {
+        throw 'Error: You must provide a valid start date';
     }
-    if (!registration_description || typeof registration_description !== 'string') {
-        throw 'Error: You must provide a valid registration_description';
+    if (!endDate || typeof endDate !== 'string' || endDate.trim().length === 0) {
+        throw 'Error: You must provide a valid end date';
     }
-    if (!parknames || typeof parknames !== 'string') {
-        throw 'Error: You must provide a valid parknames';
+    if (!startTime || typeof startTime !== 'string' || startTime.trim().length === 0) {
+        throw 'Error: You must provide a valid start time';
     }
-    if (!startdate || typeof startdate !== 'string') {
-        throw 'Error: You must provide a valid startdate';
-    }
-    if (!enddate || typeof enddate !== 'string') {
-        throw 'Error: You must provide a valid enddate';
-    }
-    if (!contact_phone || typeof contact_phone !== 'string') {
-        throw 'Error: You must provide a valid contact_phone';
+    if (!endTime || typeof endTime !== 'string' || endTime.trim().length === 0) {
+        throw 'Error: You must provide a valid end time';
     }
     if (!location || typeof location !== 'object' || Array.isArray(location)) {
         throw 'Error: You must provide a valid location object';
     }
-    if (!image || typeof image !== 'string') {
-        throw 'Error: You must provide a valid image';
+    if (!location.parkNames || typeof location.parkNames !== 'string' || location.parkNames.trim().length === 0) {
+        throw 'Error: You must provide a valid park name';
+    }
+    if (!location.location || typeof location.location !== 'string' || location.location.trim().length === 0) {
+        throw 'Error: You must provide a valid location';
+    }
+    if (!location.coordinates || typeof location.coordinates !== 'string' || location.coordinates.trim().length === 0) {
+        throw 'Error: You must provide valid coordinates';
+    }
+    if (cost === undefined || typeof cost !== 'number' || cost < 0) {
+        throw 'Error: You must provide a valid cost';
     }
 
-    let eventCollection = await events();
+    // let eventCollection = await events();
     title = title.trim();
-    link = link.trim()
+    link = link.trim();
     description = description.trim();
-    registration_url = registration_url.trim()
-    registration_description = registration_description.trim()
-    parknames = parknames.trim()
-    startdate = startdate.trim()
-    enddate = enddate.trim()
-    contact_phone = contact_phone.trim()
-    image = image.trim()
-
-    const normalizedLocation = buildLocationObject(location, parknames, coordinates);
+    // registrationUrl = registrationUrl.trim();
+    // registrationDescription = registrationDescription.trim();
+    startDate = startDate.trim();
+    endDate = endDate.trim();
+    startTime = startTime.trim();
+    endTime = endTime.trim();
+    // contactPhone = contactPhone.trim();
+    location.parkNames = location.parkNames.trim();
+    location.location = location.location.trim();
+    location.coordinates = location.coordinates.trim();
+    // image = image.trim();
+    // eventType = eventType.trim()
     
     const newEvent = {
         title,
         link,
         description,
-        registration_url,
-        registration_description,
-        startdate,
-        enddate,
-        contact_phone,
-        location: normalizedLocation,
+        registrationUrl,
+        registrationDescription,
+        startDate,
+        endDate,
+        startTime,
+        endTime,
+        contactPhone,
+        location: {
+            parkNames: location.parkNames,
+            location: location.location,
+            coordinates: location.coordinates
+        },
         image,
-        cost: 0,
-        eventType: null,
+        cost,
+        eventType,
         comments: [],
         likeCount: 0,
         reviewList: [],
         checkedInList: [],
         registeredList: []
     };
+
+    const eventCollection = await events();
     const result = await eventCollection.insertOne(newEvent);
-    eventCollection = await events();
-    return getEventById(result.insertedId.toString());
+    return await getEventById(result.insertedId.toString());
 }
 
 async function updateEvent(id, updates){
