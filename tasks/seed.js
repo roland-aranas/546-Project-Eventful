@@ -3,6 +3,7 @@ import {initializeCollections} from '../config/mongoCollections.js';
 import {getApiData} from '../getData.js';
 import {events, users} from '../config/mongoCollections.js';
 import {ObjectId} from 'mongodb';
+import bcrypt from 'bcrypt';
 
 const seed = async () => {
     try {
@@ -50,6 +51,7 @@ const seed = async () => {
         } else {
             console.log('Seed complete: API returned 0 events, nothing was inserted.');
         }
+        console.log("Inserting users, hashing passwords may take a moment...")
 
         const usersData = [
             {
@@ -60,7 +62,7 @@ const seed = async () => {
                 age: 30,
                 email: 'john@example.com',
                 username: 'john.apple',
-                passwordHash: 'password123!',
+                passwordHash: await bcrypt.hash('password123!',16),
                 borough: 'Manhattan',
                 favoriteLocations: [],
                 createdEvents: [],
@@ -75,7 +77,7 @@ const seed = async () => {
                 age: 25,
                 email: 'jane@example.com',
                 username: 'jane.doe',
-                passwordHash: 'password456!',
+                passwordHash: await bcrypt.hash('password456!',16),
                 borough: 'Brooklyn',
                 favoriteLocations: [],
                 createdEvents: [],
@@ -90,7 +92,7 @@ const seed = async () => {
                 age: 35,
                 email: 'bob@example.com',
                 username: 'bob.smith',
-                passwordHash: 'password789!',
+                passwordHash: await bcrypt.hash('password789!',16),
                 borough: 'Queens',
                 favoriteLocations: [],
                 createdEvents: [],
@@ -105,7 +107,7 @@ const seed = async () => {
                 age: 28,
                 email: 'alice@example.com',
                 username: 'alice.johnson',
-                passwordHash: 'password012!',
+                passwordHash: await bcrypt.hash('password012!',16),
                 borough: 'Bronx',
                 favoriteLocations: [],
                 createdEvents: [],
