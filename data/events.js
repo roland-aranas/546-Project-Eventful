@@ -153,26 +153,26 @@ async function updateEvent(id, updates){
     
     const update_data = {...updates};
     if (updates.location && typeof updates.location === 'object' && !Array.isArray(updates.location)) {
-        update_data.location ={
-            parknames: updates.location.parknames ?updates.location.parknames.trim(): existing_event.location?.parknames,
-            location: updates.location.location ?updates.location.location.trim() : existing_event.location?.location,
-            coordinates: updates.location.coordinates? updates.location.coordinates.trim(): existing_event.location?.coordinates
+        update_data.location = {
+            parkNames: updates.location.parkNames ? updates.location.parkNames.trim() : existing_event.location?.parkNames,
+            location: updates.location.location ? updates.location.location.trim() : existing_event.location?.location,
+            coordinates: updates.location.coordinates ? updates.location.coordinates.trim() : existing_event.location?.coordinates
         };
     }
 
-    if (updates.parknames || updates.coordinates) {
-        update_data.location = buildLocationObject(
-            {
-                ...(update_data.location && typeof update_data.location === 'object' ? update_data.location : existing_event.location),
-                location:(update_data.location && update_data.location.location) || existing_event.location?.location
-            },
-            updates.parknames??existing_event.location.parknames,
-            updates.coordinates??existing_event.location.coordinates
-        );
-    }
+    // if (updates.parknames || updates.coordinates) {
+    //     update_data.location = buildLocationObject(
+    //         {
+    //             ...(update_data.location && typeof update_data.location === 'object' ? update_data.location : existing_event.location),
+    //             location:(update_data.location && update_data.location.location) || existing_event.location?.location
+    //         },
+    //         updates.parknames??existing_event.location.parknames,
+    //         updates.coordinates??existing_event.location.coordinates
+    //     );
+    // }
 
-    delete update_data.parknames;
-    delete update_data.coordinates;
+    // delete update_data.parknames;
+    // delete update_data.coordinates;
 
     await event_data.updateOne({_id: new ObjectId(id)}, {$set: update_data});
 

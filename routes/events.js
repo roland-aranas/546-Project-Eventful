@@ -42,4 +42,33 @@ router.route('/').post(async (req, res) => {
     }
 });
 
+// PATCH event
+router.route('/:id').patch(async (req, res) => {
+    let eventInfo = req.body;
+
+    if (!eventInfo || Object.keys(eventInfo).length === 0) {
+        return res.status(400).json({error: 'No fields provided'});
+    }
+
+    try {
+        const updatedEvent = await eventData.updateEvent(req.params.id, eventInfo);
+        return res.json(updatedEvent);
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
+// DELETE event
+router.route('/:id').delete(async (req, res) => {
+    try {
+        const deletedEvent = await eventData.deleteEvent(req.params.id);
+        return res.json({
+        deleted: true,
+        event: deletedEvent
+        });
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
 export default router;

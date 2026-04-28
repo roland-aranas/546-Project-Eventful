@@ -17,40 +17,78 @@ const seed = async () => {
 
         if(!Array.isArray(data)) throw 'Could not get API event data';
 
-        if(data.length > 0) {
-            for (let i of data) {
-                i.cost = 0;
-                i.eventType = null;
-                i.comments = [];
-                i.likeCount = 0;
-                i.reviewList = [];
-                i.checkedInList = [];
-                i.registeredList = [];
-                delete i.guid;
-                delete i.parkids;
-                delete i.instructor;
-                delete i.categories;
-                delete i.pubDate;
-            }
+        let cleanedEvents = [];
 
-            for (const event of data) {
-                const location = {
-                    parknames: event.parknames ?? null,
+        for (const event of data) {
+            let newEvent = {
+                title: event.title,
+                link: event.link,
+                description: event.description,
+                registrationUrl: event.registration_url ?? null,
+                registrationDescription: event.registration_description ?? null,
+                startDate: event.startdate,
+                endDate: event.enddate,
+                startTime: event.starttime,
+                endTime: event.endtime,
+                contactPhone: event.contact_phone ?? null,
+                location: {
+                    parkNames: event.parknames ?? null,
                     location: event.location ?? null,
                     coordinates: event.coordinates ?? null
-                };
+                },
+                image: event.image ?? null,
+                cost: event.cost ?? 0,
+                eventType: null,
+                comments: [],
+                likeCount: 0,
+                reviewList: [],
+                checkedInList: [],
+                registeredList: []
+            };
 
-                event.location = location;
-                delete event.parknames;
-                delete event.coordinates;
-            }
-
-            await eventCollection.deleteMany({});
-            const insertInfo = await eventCollection.insertMany(data);
-            console.log(`Seed complete: inserted ${insertInfo.insertedCount} events into database.`);
-        } else {
-            console.log('Seed complete: API returned 0 events, nothing was inserted.');
+            cleanedEvents.push(newEvent);
         }
+
+        console.log('Inserting cleaned events...');
+        const insertInfo = await eventCollection.insertMany(cleanedEvents);
+
+        console.log(`Inserted ${insertInfo.insertedCount} events`);
+
+
+        // if(data.length > 0) {
+        //     for (let i of data) {
+        //         i.cost = 0;
+        //         i.eventType = null;
+        //         i.comments = [];
+        //         i.likeCount = 0;
+        //         i.reviewList = [];
+        //         i.checkedInList = [];
+        //         i.registeredList = [];
+        //         delete i.guid;
+        //         delete i.parkids;
+        //         delete i.instructor;
+        //         delete i.categories;
+        //         delete i.pubDate;
+        //     }
+
+        //     for (const event of data) {
+        //         const location = {
+        //             parkNames: event.parknames ?? null,
+        //             location: event.location ?? null,
+        //             coordinates: event.coordinates ?? null
+        //         };
+
+        //         event.location = location;
+        //         delete event.parknames;
+        //         delete event.coordinates;
+        //     }
+
+        //     await eventCollection.deleteMany({});
+        //     const insertInfo = await eventCollection.insertMany(data);
+        //     console.log(`Seed complete: inserted ${insertInfo.insertedCount} events into database.`);
+        // } else {
+        //     console.log('Seed complete: API returned 0 events, nothing was inserted.');
+        // }
         console.log("Inserting users, hashing passwords may take a moment...")
 
         const usersData = [
