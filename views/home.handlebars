@@ -1,0 +1,22 @@
+<section class="hero">
+    <h1>Name of App</h1>
+    <h3>Welcome {{user.name}}!</h3>
+</section>
+
+<section class="recommended">
+    <h2>Events Today Near {{user.location}}</h2>
+
+  {{#if recEvents.length}}
+    {{#each recEvents}}
+      <a href="/events/{{this.id}}" class="event-card">
+        <img src="{{this.image}}" alt="{{this.title}}">
+        <h3>{{this.title}}</h3>
+        <p class="description">{{this.description}}</p>
+        <p class="startTime">Starts: {{this.startTime}}</p>
+        <p class="endTime">Ends: {{this.endTime}}</p>
+      </a>
+    {{/each}}
+  {{else}}
+    <p>No events near you today.</p>
+  {{/if}}
+</section>

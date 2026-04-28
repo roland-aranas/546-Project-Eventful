@@ -1,0 +1,94 @@
+
+<!-- Variables needed: user, event -->
+
+<section class="hero">
+    <h1>{{user.name}}</h1>
+</section>
+
+<section class="event-info">
+    <h2>{{event.title}}</h2>
+    <h4>Type: {{event.type}}</h4>
+    <img src="{{event.image}}" alt="{{event.title}}">
+    <p>{{event.location}}</p>
+    <p>{{event.description}}</p>
+    {{#if event.endDate}}
+    <p>{{event.startDate}} - {{event.endDate}}</p>
+    
+
+    {{else}}
+    <p>{{event.startDate}}</p>
+    {{/if}}
+    <p>{{event.startTime}} - {{event.endTime}}</p>
+    <p>Hosted by: {{event.host}}</p>
+    <p>{{event.cost}}</p>
+
+</section>
+
+<section class="event-interaction">
+    <div class="favorite">
+
+    {{#if event.isFavorited}}
+    <!--         LIKE = ADD TO CALENDER?       -->
+        <button class="remove-favorite">Remove from Favorites</button>
+     {{else}}
+        <button class="add-favorite">Save to Calendar</button>
+    {{/if}}
+    </div>
+
+    <div class="conflict-popup">
+        <!-- HIDE BY DEFAULT -->
+        <p>This event conflict with a planned event!</p>
+        <button class="conflict-confirm">Save Anyway</button>
+        <button class="conflict-cancel">Cancel</button>
+    </div>
+
+    <div class="reactions">
+        <!-- Don't think this is necessary tbh -->
+        <button class="like-btn">👍 Like ({{event.likes}})</button>
+        <button class="dislike-btn">👎 Dislike ({{event.dislikes}})</button>
+    </div>
+
+    <div class="comments">
+        <h3>Comments</h3>
+        {{#if comments.length}}
+        {{#each}}
+        <div class="comment">
+        <p class="comment-author">{{this.user}}</p>
+        <p class="comment-text">{{this.text}}</p>
+        </div>
+        {{/each}}
+        {{else}}
+        <p>No comments yet</p>
+        {{/if}}
+    </div>
+
+    <div class="add-comment">
+        <textarea id="commentInput" placeholder="Leave a comment..."></textarea>
+        <button class="submit-comment">Post Comment</button>
+    </div>
+
+
+</section>
+
+<section class="rate-and-review">
+    <!-- only shown if user has attended event -->
+    {{#if user.hasAttended}}
+        {{#if user.hasReviewed}}
+        <div class="user-review">
+            <p class="review-rating">Rating: {{event.userReview.rating}}/5</p>
+            <p class="review-text">{{event.userReview.text}}</p>
+        </div>
+        {{else}}
+      <div class="star-rating">
+        <span>⭐ Rating:</span>
+        <button class="star" data-value="1">1</button>
+        <button class="star" data-value="2">2</button>
+        <button class="star" data-value="3">3</button>
+        <button class="star" data-value="4">4</button>
+        <button class="star" data-value="5">5</button>
+      </div>
+      <textarea id="reviewInput" placeholder="Write your review..."></textarea>
+      <button class="submit-review">Submit Review</button>
+    {{/if}}
+    {{/if}}
+</section>
