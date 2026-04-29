@@ -315,4 +315,4 @@ let exportedMethods = {
     }
 };
 
-export default exportedMethds;
+export default exportedMethods;

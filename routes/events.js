@@ -71,4 +71,14 @@ router.route('/:id').delete(async (req, res) => {
     }
 });
 
+// ADD linke
+router.route('/:id/like').post(async (req, res) => {
+    try {
+        const updatedEvent = await likeEvent(req.params.id, req.session.user._id);
+        res.json({ likeCount: updatedEvent.likeCount });
+    } catch (e) {
+        res.status(400).json({ error: e.message || e.toString()  });
+    }
+});
+
 export default router;
