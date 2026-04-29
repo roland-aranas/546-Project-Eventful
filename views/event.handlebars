@@ -1,0 +1,80 @@
+
+<section class="hero">
+    <h1>{{event.title}}</h1>
+
+</section>
+
+<section class="event-info">
+    <img src="{{event.image}}" alt="{{event.title}}">
+    <h4>Type: {{event.eventType}}</h4>
+    <p>{{event.location}}</p>
+    <p>{{event.description}}</p>
+    {{#if event.endDate}}
+    <p>{{event.startDate}} - {{event.endDate}}</p>
+    
+
+    {{else}}
+    <p>{{event.startDate}}</p>
+    {{/if}}
+    <p>{{event.startTime}} - {{event.endTime}}</p>
+
+</section>
+
+<section class="event-interaction">
+    <div class="favorite">
+
+    {{#if event.isFavorited}}
+    <!--       does  LIKE = ADD TO CALENDER ??       -->
+        <button class="remove-favorite">Remove from Calendar</button>
+     {{else}}
+        <button class="add-favorite">Save to Calendar</button>
+    {{/if}}
+    </div>
+
+    <div class="conflict-popup">
+        <!-- HIDE BY DEFAULT -->
+        <p>This event conflict with a planned event!</p>
+        <button class="conflict-confirm">Save Anyway</button>
+        <button class="conflict-cancel">Cancel</button>
+    </div>
+
+    <div class="reactions">
+        <!-- Don't think this is necessary tbh -->
+        <button class="like-btn">👍 Like ({{event.likes}})</button>
+    </div>
+
+    <div class="comments">
+        <h3>Comments</h3>
+        {{#if comments.length}}
+        {{#each}}
+        <div class="comment">
+        <p class="comment-author">{{this.author}}</p>
+        <p class="comment-text">{{this.text}}</p>
+        </div>
+        {{/each}}
+        {{else}}
+        <p>No comments yet</p>
+        {{/if}}
+    </div>
+
+    <div class="add-comment">
+        <textarea id="commentInput" placeholder="Leave a comment..."></textarea>
+        <button class="submit-comment">Post Comment</button>
+    </div>
+
+
+</section>
+
+<section class="reviews">
+    <h3>Reviews</h3>
+    {{#each event.reviewList}}
+        <div class="review">
+        <h3>{{this.username}}</h3>
+        <p>Rating: {{this.rating}}/5</p>
+        <p>{{this.reviewText}}</p>
+        <p>{{this.createdAt}}</p>
+        </div>
+    {{else}}
+        <p>No reviews yet. Be the first!</p>
+{{/each}}
+</section>
