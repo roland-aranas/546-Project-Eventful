@@ -168,27 +168,16 @@ async function updateEvent(id, updates){
         }
     }
     
-    let finalStartDate = update_data.startDate || existing_event.startDate;
-    let finalEndDate = update_data.endDate || existing_event.endDate;
-    let finalStartTime = update_data.startTime || existing_event.startTime;
-    let finalEndTime = update_data.endTime || existing_event.endTime;
-    let checkedDateTime = validation.checkEventDateTime(
-        finalStartDate,
-        finalEndDate,
-        finalStartTime,
-        finalEndTime
-    );
+    if (updates.startDate !== undefined || updates.endDate !== undefined || updates.startTime !== undefined || updates.endTime !== undefined) {
+        let finalStartDate = update_data.startDate || existing_event.startDate;
+        let finalEndDate = update_data.endDate || existing_event.endDate;
+        let finalStartTime = update_data.startTime || existing_event.startTime;
+        let finalEndTime = update_data.endTime || existing_event.endTime;
+        let checkedDateTime = validation.checkEventDateTime(finalStartDate, finalEndDate, finalStartTime, finalEndTime);
 
-    if (updates.startDate !== undefined) {
         update_data.startDate = checkedDateTime.startDate;
-    }
-    if (updates.endDate !== undefined) {
         update_data.endDate = checkedDateTime.endDate;
-    }
-    if (updates.startTime !== undefined) {
         update_data.startTime = checkedDateTime.startTime;
-    }
-    if (updates.endTime !== undefined) {
         update_data.endTime = checkedDateTime.endTime;
     }
 

@@ -2,51 +2,70 @@
 
 import {Router} from 'express';
 import bcrypt from 'bcrypt';
-import { users } from '../config/mongoCollections.js';
+import {users, events} from '../config/mongoCollections.js';
+import {ObjectId} from 'mongodb';
+import userData from '../data/users.js';
+import * as validation from '../helper.js';
 
 const router = Router();
 
 router.route('/').get(async (req, res) => {
-  return res.json({message: 'users route works'});
+  try {
+    const allUsers = await userData.getAllUsers();
+    return res.json(allUsers);
+  } catch (e) {
+    return res.status(500).json({error: e.message});
+  }
 });
 
 // GET /users/login - show login form
 router.get('/login', (req, res) => {
-  res.render('login');
+  return res.render('login');
 });
 
 // POST /users/login
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).render('login', {error: 'Invalid request body'});
+  }
+
+  let {username, password} = req.body;
 
   try {
+    username = validation.checkString(username, 'Username');
+    password = validation.checkString(password, 'Password');
+
     const usersCollection = await users();
-    const user = await usersCollection.findOne({ username });
-    if (!user) return res.render('login', { error: 'User not found' });
+    const user = await usersCollection.findOne({username: username});
+    if (!user) return res.status(400).render('login', {error: 'Invalid username or password'});
     
     const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match) return res.render('login', { error: 'Invalid password' });
+    if (!match) return res.status(400).render('login', {error: 'Invalid username or password'});
    
-    req.session.user = user;
-    res.redirect('/');
+    req.session.user = {_id: user._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName};
+    return res.redirect('/');
   } catch (e) {
-    res.status(500).render('error', { error: e.message });
+    return res.status(400).render('login', { error: e.message || e.toString()});
   }
 });
 
 // POST /users/logout
 router.post('/logout', async (req, res) => {
   req.session.destroy();
-  res.redirect('/users/login');
+  return res.redirect('/users/login');
 });
 
 // GET /users/signup 
 router.get('/signup', (req, res) => {
-  res.render('signup');
+  return res.render('signup');
 });
 
 // POST /users/signup 
 router.post('/signup', async (req, res) => {
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    return res.status(400).render('signup', {error: 'Invalid request body'});
+  }
+
   const { firstName, lastName, age, email, username, password, borough } = req.body;
 
   try {
@@ -59,17 +78,24 @@ router.post('/signup', async (req, res) => {
       password,
       borough
     });
-    req.session.user = newUser;
-    res.redirect('/');
+    req.session.user = {_id: newUser._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName};
+    return res.redirect('/');
   } catch (e) {
-    res.render('register', { error: e });
+    return res.status(400).render('signup', { error: e });
   }
 });
 
 //GET /users/:id
 router.get('/:id', async (req, res) => {
+  let id;
   try {
-    const user = await exportedMethods.getUserById(req.params.id);
+    id = validation.checkId(req.params.id, "User ID");
+  } catch (e) {
+    return res.status(400).render('error', {error: e.message});
+  }
+
+  try {
+    const user = await userData.getUserById(id);
     const eventsCollection = await events();
     const savedEventDocs = await eventsCollection
       .find({ _id: { $in: user.savedEvents } })
@@ -84,15 +110,15 @@ router.get('/:id', async (req, res) => {
     const upcomingEvents = savedEventDocs.filter(e => new Date(e.startDate) >= now);
     const pastEvents = savedEventDocs.filter(e => new Date(e.startDate) < now);
 
-    res.render('profile', {
-      user,
-      plannedEvents,
-      pastEvents,
+    return res.render('profile', {
+      user: user,
+      upcomingEvents: upcomingEvents,
+      pastEvents: pastEvents,
       createdEvents: createdEventDocs,
       isOwnProfile: req.session.user._id.toString() === req.params.id
     });
   } catch (e){
-    res.status(404).render('error', { error: e });
+    return res.status(404).render('error', { error: e });
   }
 });
 

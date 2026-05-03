@@ -18,9 +18,15 @@ router.route('/').get(async (req, res) => {
 
 // GET event by id
 router.route('/:id').get(async (req, res) => {
+    let id;
     try {
-        const id = validation.checkId(req.params.id, 'Event ID');
-        const event = await eventData.getEventById(req.params.id);
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+
+    try {
+        const event = await eventData.getEventById(id);
         return res.json(event);
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
@@ -31,30 +37,42 @@ router.route('/:id').get(async (req, res) => {
 router.route('/').post(async (req, res) => {
     let eventInfo = req.body;
 
-    if (!eventInfo || Object.keys(eventInfo).length === 0) {
+    if (!eventInfo || typeof eventInfo !== 'object' || Array.isArray(eventInfo)) {
+        return res.status(400).json({error: 'You must provide event data'});
+    }
+
+    if (Object.keys(eventInfo).length === 0) {
         return res.status(400).json({error: 'No data provided'});
     }
 
     try {
         const newEvent = await eventData.createEvent(eventInfo);
-        return res.json(newEvent);
+        return res.status(201).json(newEvent);
     } catch (e) {
-    console.log(e);
-    return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).json({error: e.message || e.toString()});
     }
 });
 
 // PATCH event
 router.route('/:id').patch(async (req, res) => {
+    let id;
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+
     let eventInfo = req.body;
 
-    if (!eventInfo || Object.keys(eventInfo).length === 0) {
+    if (!eventInfo || typeof eventInfo !== 'object' || Array.isArray(eventInfo)) {
+        return res.status(400).json({error: 'You must provide update data'});
+    }
+    if (Object.keys(eventInfo).length === 0) {
         return res.status(400).json({error: 'No fields provided'});
     }
 
     try {
-        const id = validation.checkId(req.params.id, 'Event ID');
-        const updatedEvent = await eventData.updateEvent(req.params.id, eventInfo);
+        const updatedEvent = await eventData.updateEvent(id, eventInfo);
         return res.json(updatedEvent);
     } catch (e) {
         return res.status(400).json({error: e.message || e.toString()});
@@ -63,20 +81,32 @@ router.route('/:id').patch(async (req, res) => {
 
 // DELETE event
 router.route('/:id').delete(async (req, res) => {
+    let id;
     try {
-        const id = validation.checkId(req.params.id, 'Event ID');
-        const deletedEvent = await eventData.deleteEvent(req.params.id);
-        return res.json({deleted: true, event: deletedEvent});
+        id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
         return res.status(400).json({error: e.message || e.toString()});
+    }
+
+    try {
+        const deletedEvent = await eventData.deleteEvent(id);
+        return res.json({deleted: true, event: deletedEvent});
+    } catch (e) {
+        return res.status(404).json({error: e.message || e.toString()});
     }
 });
 
 // ADD linke
 router.route('/:id/like').post(async (req, res) => {
+    let id;
     try {
-        const id = validation.checkId(req.params.id, 'Event ID');
-        const updatedEvent = await likeEvent(req.params.id, req.session.user._id);
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+
+    try {
+        const updatedEvent = await eventData.likeEvent(id, req.session.user._id);
         res.json({likeCount: updatedEvent.likeCount});
     } catch (e) {
         res.status(400).json({error: e.message || e.toString()});
