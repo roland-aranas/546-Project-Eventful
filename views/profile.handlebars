@@ -4,11 +4,17 @@ user
 plannedEvents (events user has saved and are in the future)
 pastEvents (events user has saved and have already passed)
 createdEvents (events user has created)
+ifIsOwnProfile
 
 -->
 <section class="hero">
     <h1>{{user.firstName}} {{user.lastName}}</h1>
     <h3>Borough: {{user.borough}}</h3>
+    {{#if isOwnProfile}}
+        <p>{{user.email}}</p>
+        <a href="/users/{{user._id}}/edit">Edit Profile</a>
+        <button>Delete Account</button>
+    {{/if}}
 </section>
 
 <section class="fav-locations">
@@ -28,6 +34,11 @@ createdEvents (events user has created)
         <p>{{event.startDate}} - {{event.endDate}}</p>
         {{else}}
         <p>{{event.startDate}}</p>
+        {{/if}}
+        {{#if isOwnProfile}}
+            <form action="/users/{{../user._id}}/savedEvents/{{this._id}}/remove" method="POST">
+                <button type="submit">Unsave</button>
+            </form>
         {{/if}}
       </a>
       {{/each}}

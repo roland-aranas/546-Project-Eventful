@@ -69,7 +69,7 @@ router.post('/signup', async (req, res) => {
   const { firstName, lastName, age, email, username, password, borough } = req.body;
 
   try {
-    const newUser = await exportedMethods.createUser({
+    const newUser = await userData.createUser({
       firstName,
       lastName,
       age: parseInt(age),
@@ -78,10 +78,21 @@ router.post('/signup', async (req, res) => {
       password,
       borough
     });
-    req.session.user = {_id: newUser._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName};
+    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName};
     return res.redirect('/');
   } catch (e) {
     return res.status(400).render('signup', { error: e });
+  }
+});
+
+// TEMP - remove before production
+router.get('/test-calendar', async (req, res) => {
+  try {
+    const user = await userData.getUserByUsername('john.apple');
+    req.session.user = user;
+    res.redirect('/users/calendar');
+  } catch (e) {
+    res.status(500).send(e.toString()); // show raw error
   }
 });
 
@@ -89,20 +100,21 @@ router.post('/signup', async (req, res) => {
 router.get('/calendar', async (req, res) => {
   try {
     const currentUser = req.session.user;
-
     if (!currentUser) return res.redirect('/users/login');
+
+    // fetch full user to get savedEvents
+    const fullUser = await userData.getUserById(currentUser._id);
 
     const eventsCollection = await events();
     const savedEventDocs = await eventsCollection
-      .find({ _id: { $in: currentUser.savedEvents } })
+      .find({ _id: { $in: fullUser.savedEvents } })
       .toArray();
 
     res.render('calendar', { savedEvents: savedEventDocs });
   } catch (e) {
-    res.status(500).render('error', { error: e });
+    res.status(500).send(e.toString());
   }
 });
-
 
 //GET /users/:id
 router.get('/:id', async (req, res) => {
@@ -140,6 +152,9 @@ router.get('/:id', async (req, res) => {
     return res.status(404).render('error', { error: e });
   }
 });
+
+
+
 
 
 
