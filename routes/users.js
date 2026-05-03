@@ -85,6 +85,25 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+//GET /users/calendar 
+router.get('/calendar', async (req, res) => {
+  try {
+    const currentUser = req.session.user;
+
+    if (!currentUser) return res.redirect('/users/login');
+
+    const eventsCollection = await events();
+    const savedEventDocs = await eventsCollection
+      .find({ _id: { $in: currentUser.savedEvents } })
+      .toArray();
+
+    res.render('calendar', { savedEvents: savedEventDocs });
+  } catch (e) {
+    res.status(500).render('error', { error: e });
+  }
+});
+
+
 //GET /users/:id
 router.get('/:id', async (req, res) => {
   let id;

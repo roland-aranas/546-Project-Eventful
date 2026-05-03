@@ -1,0 +1,19 @@
+<div id="calendar"></div>
+
+<script>
+  const savedEvents = {{{json savedEvents}}};
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      events: savedEvents.map(e => ({
+        title: e.title,
+        start: e.startDate,
+        end: e.endDate,
+        url: '/events/' + e._id
+      }))
+    });
+    calendar.render();
+  });
+</script>
