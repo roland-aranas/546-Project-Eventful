@@ -40,13 +40,16 @@ app.listen(3000, ()=> {
 
 
 //NEW CODE:
+console.log('1 - before imports');
 import configRoutes from './routes/index.js';
 import express from 'express';
 import { engine } from "express-handlebars";
 import session from 'express-session';
 // import eventRoutes from './routes/events.js';
+console.log('2 - after imports');
 
 const app = express();
+
 
 // app.use('/events', eventRoutes);
 
