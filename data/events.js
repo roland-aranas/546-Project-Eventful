@@ -35,7 +35,6 @@ async function createEvent({
     image,
     cost,
     eventType,
-    hostedBy,
     createdBy
 }) {
     title = validation.checkString(title, 'Title');
@@ -53,8 +52,7 @@ async function createEvent({
     image = validation.checkOptionalString(image, 'Image');
     cost = validation.checkCost(cost);
     eventType = validation.checkOptionalString(eventType, 'Event type');
-    hostedBy = validation.checkString(hostedBy, 'Hosted By');
-    createdBy = validation.checkId(createdBy, 'Created By');
+    createdBy = validation.checkString(hostedBy, 'Hosted By');
 
     title = title.trim();
     link = link.trim();
@@ -86,7 +84,6 @@ async function createEvent({
         image,
         cost,
         eventType,
-        hostedBy,
         createdBy: new ObjectId(createdBy),
         comments: [],
         likeCount: 0,
@@ -383,6 +380,10 @@ async function likeReview(eventId, reviewId, userId) {
             $push: { "reviewList.$.likedBy": new ObjectId(userId) }
         }
     );
+}
+
+async function likeEvent(eventId, userId) {
+    console.log("like and event");
 }
 
 export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview};

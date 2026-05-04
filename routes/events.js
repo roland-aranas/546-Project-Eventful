@@ -77,18 +77,6 @@ router.route('/:id').get(async (req, res) => {
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }
-    
-    try {
-        const event = await eventData.getEventById(id);
-
-        return res.render('event', {
-            event: event,
-            comments: event.comments || []
-        });
-
-    } catch (e) {
-        return res.status(404).render('error', { error: e.message || e.toString() });
-    }
 });
 
 // POST event
@@ -193,6 +181,50 @@ router.route('/:id/like').post(async (req, res) => {
         res.json({likeCount: updatedEvent.likeCount});
     } catch (e) {
         res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
+// SAVE event to user's calendar
+router.route('/:id/save').post(async (req, res) => {
+    let id;
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to save an event'});
+    }
+
+    try {
+        await eventData.getEventById(id);
+        const updatedUser = await userData.addSavedEvent(req.session.user._id, id);
+        return res.json({saved: true, savedEvents: updatedUser.savedEvents});
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
+// REMOVE event from user's calendar
+router.route('/:id/save').delete(async (req, res) => {
+    let id;
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to remove a saved event'});
+    }
+
+    try {
+        await eventData.getEventById(id);
+        const updatedUser = await userData.removeSavedEvent(req.session.user._id, id);
+        return res.json({removed: true, savedEvents: updatedUser.savedEvents});
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
     }
 });
 
