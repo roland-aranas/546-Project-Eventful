@@ -203,14 +203,24 @@ async function deleteEvent(id) {
 }
 
 async function addComment(eventId, userId, textContent) {
-    if (!ObjectId.isValid(eventId) || !ObjectId.isValid(userId)) {
-        throw 'Invalid IDs';
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
+    }
+    eventId = eventId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
     }
     if (!textContent || typeof textContent !== 'string' || !textContent.trim()) {
-        throw 'Invalid comment text';
+        throw 'Error: Comment text must be a non-empty string';
     }
 
     const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
 
     const newComment = {
         _id: new ObjectId(),
@@ -221,19 +231,32 @@ async function addComment(eventId, userId, textContent) {
         likedBy: []
     };
 
-    const updateInfo = await eventCollection.updateOne(
+    await eventCollection.updateOne(
         { _id: new ObjectId(eventId) },
         { $push: { comments: newComment }}
     );
-
-    if (updateInfo.matchedCount === 0) throw 'Event not found';
 
     return newComment;
 }
 
 async function addReview(eventId, userId, username, rating, textContent) {
-    if (!ObjectId.isValid(eventId) || !ObjectId.isValid(userId)) {
-        throw 'Invalid IDs';
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
+    }
+    eventId = eventId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
+    if (typeof username !== 'string' || !username.trim()) {
+        throw 'Error: Username must be a non-empty string';
+    }
+    username = username.trim();
+    if (typeof textContent !== 'string' || !textContent.trim()) {
+        throw 'Error: Review text must be a non-empty string';
     }
 
     if (typeof rating !== 'number' || rating < 1 || rating > 5) {
@@ -245,7 +268,7 @@ async function addReview(eventId, userId, username, rating, textContent) {
 
     if (!event) throw 'Event not found';
 
-    const checkedIn = event.checkedInList.some(
+    const checkedIn = event.checkedInList?.some(
         (id) => id.toString() === userId
     );
 
@@ -253,19 +276,20 @@ async function addReview(eventId, userId, username, rating, textContent) {
         throw 'User must check in before reviewing';
     }
 
+    if (event.reviewList?.some((r) => r.userID.toString() === userId)) {
+        throw 'Error: User already reviewed this event';
+    }
+
     const newReview = {
         _id: new ObjectId(),
         userID: new ObjectId(userId),
         username,
         createdAt: new Date(),
-        textContent: textContent?.trim() || '',
+        textContent: textContent.trim(),
         numLikes: 0,
-        rating
+        rating,
+        likedBy: []
     };
-
-    if (event.reviewList.some((r) => r.userID.toString() === userId)) {
-        throw 'User already reviewed this event';
-    }
 
     await eventCollection.updateOne(
         { _id: new ObjectId(eventId) },
@@ -275,40 +299,84 @@ async function addReview(eventId, userId, username, rating, textContent) {
     return newReview;
 }
 
-async function likeComment(eventId, commentId) {
-    const eventCollection = await events();
-
-    if (events.comments.find((c) => c._id.toString() === commentId).likedBy.some((id) => id.toString() === userId)) {
-        throw 'User already liked this comment';
+async function likeComment(eventId, commentId, userId) {
+    if (typeof eventId !== 'string' || typeof commentId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId, commentId, and userId must be strings';
+    }
+    eventId = eventId.trim();
+    commentId = commentId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(commentId)) {
+        throw 'Error: Invalid comment id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
     }
 
-    const updateInfo = await eventCollection.updateOne(
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    const comment = event.comments?.find((c) => c._id.toString() === commentId);
+    if (!comment) throw 'Error: Comment not found';
+
+    if (comment.likedBy?.some((id) => id.toString() === userId)) {
+        throw 'Error: User already liked this comment';
+    }
+
+    await eventCollection.updateOne(
         { 
             _id: new ObjectId(eventId),
             "comments._id": new ObjectId(commentId)
         },
         {
-            $inc: { "comments.$.likes": 1 }
+            $inc: { "comments.$.likes": 1 },
+            $push: { "comments.$.likedBy": new ObjectId(userId) }
         }
     );
-
-    if (updateInfo.matchedCount === 0) throw 'Comment not found';
 }
 
-async function likeReview(eventId, reviewId) {
-    const eventCollection = await events();
+async function likeReview(eventId, reviewId, userId) {
+    if (typeof eventId !== 'string' || typeof reviewId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId, reviewId, and userId must be strings';
+    }
+    eventId = eventId.trim();
+    reviewId = reviewId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(reviewId)) {
+        throw 'Error: Invalid review id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
 
-    const updateInfo = await eventCollection.updateOne(
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    const review = event.reviewList?.find((r) => r._id.toString() === reviewId);
+    if (!review) throw 'Error: Review not found';
+
+    if (review.likedBy?.some((id) => id.toString() === userId)) {
+        throw 'Error: User already liked this review';
+    }
+
+    await eventCollection.updateOne(
         {
             _id: new ObjectId(eventId),
             "reviewList._id": new ObjectId(reviewId)
         },
         {
-            $inc: { "reviewList.$.numLikes": 1 }
+            $inc: { "reviewList.$.numLikes": 1 },
+            $push: { "reviewList.$.likedBy": new ObjectId(userId) }
         }
     );
-
-    if (updateInfo.matchedCount === 0) throw 'Review not found';
 }
 
 export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview};
