@@ -6,6 +6,48 @@ import * as validation from '../helper.js';
 
 const router = Router();
 
+router.get('/home', async (req, res) => {
+    const events = await eventData.getAllEvents();
+
+    return res.render('home', {
+        user: req.session.user,
+        recEvents: events
+    });
+});
+
+router.get('/search', async (req, res) => {
+    return res.render('search');
+});
+
+router.get('/create', async (req, res) => {
+    return res.render('create');
+});
+
+//search route
+router.route('/search').get(async (req, res) => {
+    let query = req.query.q;
+
+    if (!query || typeof query !== 'string' || !query.trim()) {
+        return res.status(400).json({ error: 'no search terms given' });
+    }
+
+    query = query.trim();
+
+    try {
+        const all = await eventData.getAllEvents();
+        const results = all.filter((event) => event.title.toLowerCase().includes(query.toLowerCase()) ||
+            event.description.toLowerCase().includes(query.toLowerCase()) ||
+            event.eventType?.toLowerCase().includes(query.toLowerCase())
+        );
+
+        return res.json(results);
+    } 
+    
+    catch (e) {
+        return res.status(500).json({ error: e || e.toString() });
+    }
+});
+
 // GET all events
 router.route('/').get(async (req, res) => {
     try {
@@ -30,6 +72,18 @@ router.route('/:id').get(async (req, res) => {
         return res.json(event);
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
+    }
+    
+    try {
+        const event = await eventData.getEventById(id);
+
+        return res.render('event', {
+            event: event,
+            comments: event.comments || []
+        });
+
+    } catch (e) {
+        return res.status(404).render('error', { error: e.message || e.toString() });
     }
 });
 

@@ -10,7 +10,7 @@ user (current user)
 </section>
 
 <section class="next_event">
-    <a href="/events/{next_event.id}}" class="event-card">
+    <a href="/events/{{next_event._id}}" class="event-card">
         <img src="{{this.image}}" alt="{{this.title}}">
         <h3>{{this.title}}</h3>
         <p class="description">{{this.description}}</p>
@@ -26,7 +26,7 @@ user (current user)
 
   {{#if recEvents.length}}
     {{#each recEvents}}
-      <a href="/events/{{this.id}}" class="event-card">
+      <a href="/events/{{this._id}}" class="event-card">
         <img src="{{this.image}}" alt="{{this.title}}">
         <h3>{{this.title}}</h3>
         <p class="description">{{this.description}}</p>

@@ -25,12 +25,12 @@ ifIsOwnProfile
 
 <section class="planned-events">
     <h3>Planned Events</h3>
-    {{#each plannedEvents}}
-    <a href="/events/{{this.id}}" class="event-card">
+    {{#each upcomingEvents}}
+    <a href="/events/{{this._id}}" class="event-card">
         <img src="{{this.image}}" alt="{{this.title}}">
         <h3>{{this.title}}</h3>
         <p class="description">{{this.description}}</p>
-        {{#if event.endDate}}
+        {{#if this.endDate}}
         <p>{{event.startDate}} - {{event.endDate}}</p>
         {{else}}
         <p>{{event.startDate}}</p>
@@ -51,14 +51,15 @@ ifIsOwnProfile
         <img src="{{this.image}}" alt="{{this.title}}">
         <h3>{{this.title}}</h3>
         <p class="description">{{this.description}}</p>
+        <button class="like-btn" data-id="{{event._id}}"></button>
         {{#if this.hasAttended}}
             {{#if this.hasReview}}
                 <p> Review: {{this.userReview}} </p> <!-- Find review based on current user id -> store somewher? not sure where-->
 
-            {{#else}}
+            {{else}}
                 <a href="/events/{{this._id}}/review">Leave a Review!</a>
             {{/if}}
-        {{#else}}
+        {{else}}
         <p>Not Attended</p>
         {{/if}}
     {{/each}}
@@ -69,11 +70,11 @@ ifIsOwnProfile
 <section class="created-events">
     <h3>Events created by {{user.firstName}}</h3>
     {{#each createdEvents}}
-     <a href="/events/{{this.id}}" class="event-card">
+     <a href="/events/{{this._id}}" class="event-card">
         <img src="{{this.image}}" alt="{{this.title}}">
         <h3>{{this.title}}</h3>
         <p class="description">{{this.description}}</p>
-        {{#if event.endDate}}
+        {{#if this.endDate}}
         <p>{{event.startDate}} - {{event.endDate}}</p>
         {{else}}
         <p>{{event.startDate}}</p>
@@ -83,7 +84,3 @@ ifIsOwnProfile
 
 
 </section>
-
-
-
-

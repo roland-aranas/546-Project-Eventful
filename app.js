@@ -44,8 +44,11 @@ import configRoutes from './routes/index.js';
 import express from 'express';
 import { engine } from "express-handlebars";
 import session from 'express-session';
+import eventRoutes from './routes/events.js';
 
 const app = express();
+
+app.use('/events', eventRoutes);
 
 app.engine("handlebars", engine({
   helpers: {
@@ -69,6 +72,10 @@ app.use(session({
 app.use((req, res, next) => {
   res.locals.currentUser = req.session.user || null;
   next();
+});
+
+app.get('/home', (req, res) => {
+    res.redirect('/events/home');
 });
 
 configRoutes(app);

@@ -45,11 +45,11 @@
 
     <div class="comments">
         <h3>Comments</h3>
-        {{#if comments.length}}
-        {{#each}}
+        {{#if event.comments.length}}
+        {{#each event.comments}}
         <div class="comment">
         <p class="comment-author">{{this.author}}</p>
-        <p class="comment-text">{{this.text}}</p>
+        <p class="comment-text">{{this.textContent}}</p>
         </div>
         {{/each}}
         {{else}}
@@ -71,7 +71,7 @@
         <div class="review">
         <h3>{{this.username}}</h3>
         <p>Rating: {{this.rating}}/5</p>
-        <p>{{this.reviewText}}</p>
+        <p>{{this.textContent}}</p>
         <p>{{this.createdAt}}</p>
         </div>
     {{else}}
