@@ -385,4 +385,66 @@ async function likeReview(eventId, reviewId, userId) {
     );
 }
 
-export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview};
+async function searchEvents(keyword) {
+    if (!keyword || typeof keyword !== 'string') {
+        throw 'keyword must be a valid string';
+    }
+    const eventCollection = await events();
+
+    const filtered = {
+        $or: 
+        [
+            { title: { $regex: keyword, $options: 'i' } },
+            { description: { $regex: keyword, $options: 'i' } },
+            { eventType: { $regex: keyword, $options: 'i' } },
+            { hostedBy: { $regex: keyword, $options: 'i' } },
+            { 'location.location': { $regex: keyword, $options: 'i' } },
+            { 'location.parkNames': { $regex: keyword, $options: 'i' } },
+        ]
+    };
+
+    const results = await eventCollection.find(filtered).toArray();
+    return results;
+}
+
+async function getSortedEvents({sortBy = 'startDate', order = 'asc', borough, eventType} = {}) {
+
+    const sortOrder = order === 'desc' ? -1 : 1;
+    const eventCollection = await events();
+
+    let filter = {};
+
+    if (borough) {
+        filter['location.location'] = { $regex: borough, $options: 'i' };
+    }
+
+    if (eventType) {
+        filter.eventType = eventType; 
+    }
+
+    let sortQuery = {};
+
+    switch (sortBy) {
+        case 'startDate': sortQuery = { startDate: sortOrder, startTime: sortOrder };
+            break;
+
+        case 'endDate': sortQuery = { endDate: sortOrder, endTime: sortOrder };
+            break;
+
+        case 'cost': sortQuery = { cost: sortOrder };
+            break;
+
+        case 'likeCount': sortQuery = { likeCount: sortOrder };
+            break;
+
+        case 'title': sortQuery = { title: sortOrder };
+            break;
+
+        default:
+            throw 'invalid sort type';
+    }
+
+    return await eventCollection.find(filter).sort(sortQuery).toArray();
+}
+
+export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview, searchEvents, getSortedEvents};

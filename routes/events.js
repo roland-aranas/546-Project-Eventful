@@ -16,10 +16,6 @@ router.get('/home', async (req, res) => {
     });
 });
 
-router.get('/search', async (req, res) => {
-    return res.render('search');
-});
-
 router.get('/create', async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/users/login');
@@ -27,28 +23,23 @@ router.get('/create', async (req, res) => {
     return res.render('create');
 });
 
-//search route
-router.route('/search').get(async (req, res) => {
-    let query = req.query.q;
-
-    if (!query || typeof query !== 'string' || !query.trim()) {
-        return res.status(400).json({ error: 'no search terms given' });
-    }
-
-    query = query.trim();
+//GET for search route
+router.get('/search', async (req, res) => {
+    let { q, sortBy, order, borough, eventType } = req.query;
 
     try {
-        const all = await eventData.getAllEvents();
-        const results = all.filter((event) => event.title.toLowerCase().includes(query.toLowerCase()) ||
-            event.description.toLowerCase().includes(query.toLowerCase()) ||
-            event.eventType?.toLowerCase().includes(query.toLowerCase())
-        );
+        let results;
 
-        return res.json(results);
-    } 
-    
-    catch (e) {
-        return res.status(500).json({ error: e || e.toString() });
+        if (q && q.trim()) {
+            results = await eventData.searchEvents(q.trim());
+        } else {
+            results = await eventData.getSortedEvents({sortBy, order, borough, eventType});
+        }
+
+        return res.render('search', {user: req.session.user, results, query: q, selectedBorough: borough, selectedType: eventType, sortBy, order});
+
+    } catch (e) {
+        return res.status(500).render('error', {error: e.message || e.toString()});
     }
 });
 
