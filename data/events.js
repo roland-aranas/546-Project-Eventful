@@ -34,7 +34,9 @@ async function createEvent({
     location,
     image,
     cost,
-    eventType
+    eventType,
+    hostedBy,
+    createdBy
 }) {
     title = validation.checkString(title, 'Title');
     link = validation.checkString(link, 'Link');
@@ -51,6 +53,8 @@ async function createEvent({
     image = validation.checkOptionalString(image, 'Image');
     cost = validation.checkCost(cost);
     eventType = validation.checkOptionalString(eventType, 'Event type');
+    hostedBy = validation.checkString(hostedBy, 'Hosted By');
+    createdBy = validation.checkId(createdBy, 'Created By');
 
     title = title.trim();
     link = link.trim();
@@ -82,6 +86,8 @@ async function createEvent({
         image,
         cost,
         eventType,
+        hostedBy,
+        createdBy: new ObjectId(createdBy),
         comments: [],
         likeCount: 0,
         reviewList: [],

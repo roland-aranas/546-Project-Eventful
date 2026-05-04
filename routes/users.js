@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return res.status(400).render('login', {error: 'Invalid username or password'});
    
-    req.session.user = {_id: user._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName};
+    req.session.user = {_id: user._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName, isAdmin: user.isAdmin};
     return res.redirect('/');
   } catch (e) {
     return res.status(400).render('login', { error: e.message || e.toString()});
@@ -50,9 +50,21 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /users/logout
-router.post('/logout', async (req, res) => {
-  req.session.destroy();
-  return res.redirect('/users/login');
+router.get('/logout', (req, res) => {
+  if (!req.session) {
+    return res.redirect('/users/login');
+  }
+
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).render('error', {
+        error: 'Could not log out'
+      });
+    }
+
+    res.clearCookie('AuthCookie');
+    return res.redirect('/users/login');
+  });
 });
 
 // GET /users/signup 
@@ -78,7 +90,7 @@ router.post('/signup', async (req, res) => {
       password,
       borough
     });
-    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName};
+    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, isAdmin: newUser.isAdmin};
     return res.redirect('/');
   } catch (e) {
     return res.status(400).render('signup', { error: e });
@@ -116,6 +128,37 @@ router.get('/calendar', async (req, res) => {
   }
 });
 
+router.get('/admin', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/users/login');
+    }
+
+    if (!req.session.user.isAdmin) {
+      return res.status(403).render('error', {error: 'You do not have permission to view this page'});
+    }
+
+    const user = await userData.getUserById(req.session.user._id);
+
+    const eventsCollection = await events();
+    const createdEventDocs = await eventsCollection
+      .find({_id: {$in: user.createdEvents}})
+      .toArray();
+
+    return res.render('profile', {
+      user: user,
+      upcomingEvents: [],
+      pastEvents: [],
+      createdEvents: createdEventDocs,
+      isOwnProfile: true,
+      isAdminPage: true
+    });
+  } catch (e) {
+    return res.status(500).render('error', {error: e.toString()});
+  }
+});
+
+
 //GET /users/:id
 router.get('/:id', async (req, res) => {
   let id;
@@ -146,7 +189,7 @@ router.get('/:id', async (req, res) => {
       upcomingEvents: upcomingEvents,
       pastEvents: pastEvents,
       createdEvents: createdEventDocs,
-      isOwnProfile: req.session.user._id.toString() === req.params.id
+      isOwnProfile: req.session.user && req.session.user._id.toString() === req.params.id
     });
   } catch (e){
     return res.status(404).render('error', { error: e });

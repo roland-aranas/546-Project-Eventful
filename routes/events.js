@@ -3,6 +3,7 @@
 import {Router} from 'express';
 import * as eventData from '../data/events.js';
 import * as validation from '../helper.js';
+import userData from '../data/users.js';
 
 const router = Router();
 
@@ -20,6 +21,9 @@ router.get('/search', async (req, res) => {
 });
 
 router.get('/create', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/users/login');
+    }
     return res.render('create');
 });
 
@@ -89,18 +93,27 @@ router.route('/:id').get(async (req, res) => {
 
 // POST event
 router.route('/').post(async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to create an event'});
+    }
+
     let eventInfo = req.body;
 
     if (!eventInfo || typeof eventInfo !== 'object' || Array.isArray(eventInfo)) {
         return res.status(400).json({error: 'You must provide event data'});
     }
-
     if (Object.keys(eventInfo).length === 0) {
         return res.status(400).json({error: 'No data provided'});
     }
 
     try {
+        eventInfo.hostedBy = req.session.user.username;
+        eventInfo.createdBy = req.session.user._id;
         const newEvent = await eventData.createEvent(eventInfo);
+        await userData.addCreatedEvent(
+            req.session.user._id,
+            newEvent._id.toString()
+        );
         return res.status(201).json(newEvent);
     } catch (e) {
         return res.status(400).json({error: e.message || e.toString()});
@@ -116,8 +129,11 @@ router.route('/:id').patch(async (req, res) => {
         return res.status(400).json({error: e.message || e.toString()});
     }
 
-    let eventInfo = req.body;
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to update an event'});
+    }
 
+    let eventInfo = req.body;
     if (!eventInfo || typeof eventInfo !== 'object' || Array.isArray(eventInfo)) {
         return res.status(400).json({error: 'You must provide update data'});
     }
@@ -126,6 +142,10 @@ router.route('/:id').patch(async (req, res) => {
     }
 
     try {
+        const existingEvent = await eventData.getEventById(id);
+        if (existingEvent.createdBy && existingEvent.createdBy.toString() !== req.session.user._id && !req.session.user.isAdmin) {
+            return res.status(403).json({error: 'You do not have permission to update this event'});
+        }
         const updatedEvent = await eventData.updateEvent(id, eventInfo);
         return res.json(updatedEvent);
     } catch (e) {
@@ -141,9 +161,18 @@ router.route('/:id').delete(async (req, res) => {
     } catch (e) {
         return res.status(400).json({error: e.message || e.toString()});
     }
-
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to delete an event'});
+    }
     try {
+        const existingEvent = await eventData.getEventById(id);
+        if (existingEvent.createdBy && existingEvent.createdBy.toString() !== req.session.user._id && !req.session.user.isAdmin) {
+            return res.status(403).json({error: 'You do not have permission to delete this event'});
+        }
         const deletedEvent = await eventData.deleteEvent(id);
+        if (existingEvent.createdBy) {
+            await userData.removeCreatedEvent(existingEvent.createdBy.toString(), id);
+        }
         return res.json({deleted: true, event: deletedEvent});
     } catch (e) {
         return res.status(404).json({error: e.message || e.toString()});

@@ -44,11 +44,11 @@ import configRoutes from './routes/index.js';
 import express from 'express';
 import { engine } from "express-handlebars";
 import session from 'express-session';
-import eventRoutes from './routes/events.js';
+// import eventRoutes from './routes/events.js';
 
 const app = express();
 
-app.use('/events', eventRoutes);
+// app.use('/events', eventRoutes);
 
 app.engine("handlebars", engine({
   helpers: {
