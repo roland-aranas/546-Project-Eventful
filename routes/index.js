@@ -6,14 +6,9 @@ import eventRoutes from './events.js';
 const constructorMethod = (app) => {
   app.get('/', (req, res) => {
     if (!req.session.user) {
-      return res.redirect('/users/signup');
+      return res.redirect('/users/login');
     }
-
-    if (req.session.user.isAdmin) {
-      return res.redirect('/users/admin');
-    }
-    
-    return res.redirect(`/users/${req.session.user._id}`);
+    return res.redirect('/events/home');
   });
 
   app.use('/users', userRoutes);

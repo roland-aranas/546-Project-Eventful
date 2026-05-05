@@ -1,4 +1,8 @@
+<!-- parameters:
+event
+isSaved
 
+-->
 <section class="hero">
     <h1>{{event.title}}</h1>
 
@@ -21,22 +25,20 @@
 </section>
 
 <section class="event-interaction">
-    <div class="favorite">
+  <div class="save">
 
-    {{#if event.isFavorited}}
-    <!--       does  LIKE = ADD TO CALENDER ??       -->
-        <button class="remove-favorite">Remove from Calendar</button>
-     {{else}}
-        <button class="add-favorite">Save to Calendar</button>
+    {{#if isSaved}}
+      <form method="POST" action="/events/{{_id}}/unsave">
+        <button type="submit">Remove from Calendar</button>
+      </form>
+    {{else}}
+      <form method="POST" action="/events/{{_id}}/save">
+        <button type="submit">Save to Calendar</button>
+      </form>
     {{/if}}
-    </div>
 
-    <div class="conflict-popup">
-        <!-- HIDE BY DEFAULT -->
-        <p>This event conflict with a planned event!</p>
-        <button class="conflict-confirm">Save Anyway</button>
-        <button class="conflict-cancel">Cancel</button>
-    </div>
+  </div>
+</section>
 
     <div class="reactions">
         <!-- Don't think this is necessary tbh -->

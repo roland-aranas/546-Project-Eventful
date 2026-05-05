@@ -10,11 +10,6 @@ ifIsOwnProfile
 <section class="hero">
     <h1>{{user.firstName}} {{user.lastName}}</h1>
     <h3>Borough: {{user.borough}}</h3>
-    {{#if isOwnProfile}}
-        <p>{{user.email}}</p>
-        <a href="/users/{{user._id}}/edit">Edit Profile</a>
-        <button>Delete Account</button>
-    {{/if}}
 </section>
 
 <section class="fav-locations">
@@ -82,5 +77,16 @@ ifIsOwnProfile
       </a>
     {{/each}}
 
+
+</section>
+
+<section class="footer">
+    <footer> 
+        {{#if isOwnProfile}}
+        <p>{{user.email}}</p>
+        <a href="/users/{{user._id}}/edit">Edit Profile</a>
+        <button>Delete Account</button>
+    {{/if}}
+    </footer>
 
 </section>

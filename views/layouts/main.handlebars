@@ -12,17 +12,24 @@
   </head>
   <body>
      <nav class="nav">
-      <ul>
-      <a href="/">Home</a>
-      <a href="/users/{{currentUser._id}}">Profile</a>
-      <a href="/users/calendar">Calendar</a>
-      <a href="/events/search">Search</a>
-      <a href="/events/create">Create an Event</a>
-      <form action="/users/logout" method="GET">
-        <button type="submit">Logout</button>
+    <ul>
+      <li><a href="/events/home">Home</a></li>
+      <li><a href="/users/{{currentUser._id}}">Profile</a></li>
+      <li><a href="/users/calendar">Calendar</a></li>
+      <li><a href="/events/search">Search</a></li>
+      <li><a href="/events/create">Create an Event</a></li>
+      {{#if currentUser}}
+      <li>
+      <form action="/users/logout" method="POST">
+        <button class="logout" type="submit">Logout</button>
       </form>
-      </ul>
-    </nav>
+      </li>
+      {{else}}
+      <li><a href="/users/login">Login</a></li>
+      <li><a href="/users/signup">Sign Up</a></li>
+      {{/if}}
+    </ul>
+</nav>
     {{{body}}}
   </body>
 </html>

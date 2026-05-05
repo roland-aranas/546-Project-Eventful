@@ -34,11 +34,22 @@
 
 {{#if results}}
   {{#each results}}
-    <div>
-      <h3>{{this.title}}</h3>
-      <p>{{this.startDate}} {{this.startTime}}</p>
-      <p>{{this.location.location}}</p>
-    </div>
+      <a href="/events/{{this._id}}" class="event-card">
+        <img src="{{this.image}}" alt="{{this.title}}">
+        <h3>{{this.title}}</h3>
+        <p class="description">{{this.description}}</p>
+        <p class="startTime">Starts: {{this.startTime}}</p>
+        <p class="endTime">Ends: {{this.endTime}}</p>
+      </a>
+        {{#if this.isSaved}}
+          <form method="POST" action="/events/{{this._id}}/unsave">
+          <button type="submit">Remove from Calendar</button>
+          </form>
+        {{else}}
+          <form method="POST" action="/events/{{this._id}}/save">
+          <button type="submit">Save to Calendar</button>
+          </form>
+        {{/if}}
   {{/each}}
 {{else}}
   <p>No results</p>

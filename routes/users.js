@@ -9,6 +9,7 @@ import * as validation from '../helper.js';
 
 const router = Router();
 
+//HOME PAGE
 router.route('/').get(async (req, res) => {
   try {
     const allUsers = await userData.getAllUsers();
@@ -42,7 +43,7 @@ router.post('/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match) return res.status(400).render('login', {error: 'Invalid username or password'});
    
-    req.session.user = {_id: user._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName, isAdmin: user.isAdmin};
+    req.session.user = {_id: user._id.toString(), username: user.username, firstName: user.firstName, lastName: user.lastName, isAdmin: user.isAdmin, borough: user.borough};
     return res.redirect('/');
   } catch (e) {
     return res.status(400).render('login', { error: e.message || e.toString()});
@@ -50,7 +51,7 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /users/logout
-router.get('/logout', (req, res) => {
+router.post('/logout', (req, res) => {
   if (!req.session) {
     return res.redirect('/users/login');
   }
@@ -90,7 +91,7 @@ router.post('/signup', async (req, res) => {
       password,
       borough
     });
-    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, isAdmin: newUser.isAdmin};
+    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, isAdmin: newUser.isAdmin, borough: user.borough};
     return res.redirect('/');
   } catch (e) {
     return res.status(400).render('signup', { error: e });

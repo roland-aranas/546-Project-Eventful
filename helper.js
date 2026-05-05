@@ -154,3 +154,17 @@ export const checkEventDateTime = (startDate, endDate, startTime, endTime) => {
     endTime
   };
 };
+
+export const attachIsSaved = (events, savedEventIds) => {
+  return events.map(event => ({
+    ...event,
+    isSaved: savedEventIds.includes(event._id.toString())
+  }));
+};
+
+export const getSavedEventIds = async (user, userData) => {
+  if (!user) return [];
+  const fullUser = await userData.getUserById(user._id);
+  return fullUser.savedEvents.map(id => id.toString());
+};
+

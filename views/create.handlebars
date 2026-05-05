@@ -1,1 +1,89 @@
-<p>test create</p>
+<main class="wrap">
+ <section class="hero">
+    <h1>Create Event</h1>
+</section>
+
+
+  {{#if error}}
+    <p class="error">{{error}}</p>
+  {{/if}}
+
+  <section class="card">
+    <form method="POST" action="/events" class="form">
+
+      <div class="form-control">
+        <label for="title">Title</label>
+        <input id="title" name="title" type="text" required />
+      </div>
+
+      <div class="form-control">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" required></textarea>
+      </div>
+
+      <div class="form-control">
+        <!-- Confused on what this is supposed to be -->
+        <label for="registrationUrl">Registration URL</label>
+        <input id="registrationUrl" name="registrationUrl" type="url" />
+      </div>
+
+      <div class="form-control">
+        <label for="registrationDescription">Registration Description</label>
+        <textarea id="registrationDescription" name="registrationDescription"></textarea>
+      </div>
+
+      <div class="form-control">
+        <label for="startDate">Start Date</label>
+        <input id="startDate" name="startDate" type="date" required />
+      </div>
+
+      <div class="form-control">
+        <label for="endDate">End Date</label>
+        <input id="endDate" name="endDate" type="date" required />
+      </div>
+
+      <div class="form-control">
+        <label for="startTime">Start Time</label>
+        <input id="startTime" name="startTime" type="text" placeholder="e.g. 5:30 PM" required />
+      </div>
+
+      <div class="form-control">
+        <label for="endTime">End Time</label>
+        <input id="endTime" name="endTime" type="text" placeholder="e.g. 8:00 PM" required />
+      </div>
+
+      <div class="form-control">
+        <label for="contactPhone">Contact Phone</label>
+        <input id="contactPhone" name="contactPhone" type="tel" />
+      </div>
+
+      <div class="form-control">
+        <label for="parkNames">Park Name</label>
+        <input id="parkNames" name="parkNames" type="text" required />
+      </div>
+
+      <div class="form-control">
+        <label for="location">Location</label>
+        <input id="location" name="location" type="text" required />
+      </div>
+
+      <div class="form-control">
+        <label for="coordinates">Coordinates</label>
+        <input id="coordinates" name="coordinates" type="text" placeholder="e.g. 40.7128, -74.0060" required />
+      </div>
+
+      <div class="form-control">
+        <label for="cost">Cost</label>
+        <input id="cost" name="cost" type="number" min="0" placeholder="0 for free" required />
+      </div>
+
+      <div class="form-control">
+        <label for="eventType">Event Type</label>
+        <input id="eventType" name="eventType" type="text" />
+      </div>
+
+      <button type="submit">Create Event</button>
+    </form>
+  </section>
+
+  </main>

@@ -38,7 +38,6 @@ async function createEvent({
     createdBy
 }) {
     title = validation.checkString(title, 'Title');
-    link = validation.checkString(link, 'Link');
     description = validation.checkString(description, 'Description');
     registrationUrl = validation.checkOptionalString(registrationUrl, 'Registration URL');
     registrationDescription = validation.checkOptionalString(registrationDescription, 'Registration description');
@@ -55,7 +54,6 @@ async function createEvent({
     createdBy = validation.checkString(hostedBy, 'Hosted By');
 
     title = title.trim();
-    link = link.trim();
     description = description.trim();
     startDate = startDate.trim();
     endDate = endDate.trim();
@@ -67,7 +65,7 @@ async function createEvent({
     
     const newEvent = {
         title,
-        link,
+        link: 'placeholder',
         description,
         registrationUrl,
         registrationDescription,
@@ -94,6 +92,14 @@ async function createEvent({
 
     const eventCollection = await events();
     const result = await eventCollection.insertOne(newEvent);
+    
+    //autogenerates link to event within app 
+    const generatedLink = `/events/${id}`;
+    await eventCollection.updateOne(
+        { _id: id },
+        { $set: { link: generatedLink } }
+    );
+
     return await getEventById(result.insertedId.toString());
 }
 
