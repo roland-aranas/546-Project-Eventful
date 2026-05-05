@@ -28,11 +28,11 @@ isSaved
   <div class="save">
 
     {{#if isSaved}}
-      <form method="POST" action="/events/{{_id}}/unsave">
+      <form method="POST" action="/events/{{event._id}}/unsave">
         <button type="submit">Remove from Calendar</button>
       </form>
     {{else}}
-      <form method="POST" action="/events/{{_id}}/save">
+      <form method="POST" action="/events/{{event._id}}/save">
         <button type="submit">Save to Calendar</button>
       </form>
     {{/if}}
