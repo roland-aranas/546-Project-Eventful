@@ -1,5 +1,5 @@
 import {ObjectId} from 'mongodb';
-import {events} from '../config/mongoCollections.js';
+import {events, users} from '../config/mongoCollections.js';
 import * as validation from '../helper.js';
 
 
@@ -35,7 +35,9 @@ async function createEvent({
     image,
     cost,
     eventType,
-    createdBy
+    hostedBy,
+    createdBy,
+    totalReports = 0
 }) {
     title = validation.checkString(title, 'Title');
     description = validation.checkString(description, 'Description');
@@ -87,7 +89,9 @@ async function createEvent({
         likeCount: 0,
         reviewList: [],
         checkedInList: [],
-        registeredList: []
+        registeredList: [],
+        totalReports,
+        reportedBy: []
     };
 
     const eventCollection = await events();
@@ -126,7 +130,8 @@ async function updateEvent(id, updates){
         'location',
         'image',
         'cost',
-        'eventType'
+        'eventType',
+        'totalReports'
     ];
 
     let event_data = await events();
@@ -153,6 +158,20 @@ async function updateEvent(id, updates){
                 update_data[`location.${locKey}`] =
                     validation.checkString(updates.location[locKey], `Location ${locKey}`);
             }
+
+            for(let key of Object.keys(updates)){
+                if(updates[key] === existing_event[key]) {
+                    delete updates[key];
+                }
+                if(key === 'location') {
+                    for(let locKey of Object.keys(updates.location)) {
+                        if(updates.location[locKey] == existing_event.location[locKey]) {
+                            delete updates[`location.${locKey}`];
+                        }
+                    }
+                }
+            }
+
         } else if (key === 'cost') {
             update_data.cost = validation.checkCost(updates.cost);
         } else if (key=== 'startDate') {
@@ -198,7 +217,7 @@ async function updateEvent(id, updates){
     return await getEventById(id);
 }
 
-async function deleteEvent(id) {
+async function deleteEvent(id, userId) {
     if (!id || typeof id !== 'string' || !ObjectId.isValid(id)) {
         throw 'Error: You must provide a valid event id';
     }
@@ -388,6 +407,58 @@ async function likeReview(eventId, reviewId, userId) {
     );
 }
 
+async function reportEvent(eventId, userId, reviewedBy) {
+    if (typeof eventId !== 'string') {
+        throw 'Error: eventId must be a string';
+    }
+    eventId = eventId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (typeof userId !== 'string') {
+        throw 'Error: userId must be a string';
+    }
+    userId = userId.trim();
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
+    const data = await events();
+    const reported_event = await data.findOne({_id: new ObjectId(eventId)});
+    if (!reported_event) throw 'Error: Event not found';
+    if(reported_event.reportedBy?.some((id) => id.toString() === userId)) {
+        throw 'Error: User already reported this event';
+    }
+
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $inc: { totalReports: 1 }, $push: { reportedBy: new ObjectId(userId) }  });
+
+    if (event.totalReports + 1 >= 5) {
+        await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $set: { reviewedByAdmin: false} }
+        );
+    }
+}
+
+async function reviewEvent(eventId) {
+    if (typeof eventId !== 'string') {
+        throw 'Error: eventId must be a string';
+    }
+    eventId = eventId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    const data = await events();
+    const reviewed_event = await data.findOne({_id: new ObjectId(eventId)});
+    if (!reviewed_event) throw 'Error: Event not found';
+
+    const eventCollection = await events();
+    await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $set: {totalReports: 0, reportedBy: [] } });
+    await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $unset: { reviewedByAdmin: "" } }
+    );
+}
+
 async function likeEvent(eventId, userId) {
     console.log("like and event");
 }
@@ -454,4 +525,4 @@ async function getSortedEvents({sortBy = 'startDate', order = 'asc', borough, ev
     return await eventCollection.find(filter).sort(sortQuery).toArray();
 }
 
-export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview, searchEvents, getSortedEvents};
+export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview, searchEvents, getSortedEvents, reportEvent, reviewEvent};

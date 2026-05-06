@@ -59,6 +59,17 @@ isSaved
         {{/if}}
     </div>
 
+    <div class="reportBtn">
+      {{#if hasReported}}
+        <p>Event reported</p>
+      {{else}}
+        <form method="POST" action="/events/{{event._id}}/report">
+          <input type="hidden" name="_method" value="PATCH">
+          <button type="submit">Report Event</button>
+        </form>
+      {{/if}}
+    </div>
+
     <div class="add-comment">
         <textarea id="commentInput" placeholder="Leave a comment..."></textarea>
         <button class="submit-comment">Post Comment</button>

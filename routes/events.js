@@ -101,7 +101,13 @@ router.route('/:id').get(async (req, res) => {
         const event = await eventData.getEventById(id);
         const savedIds = await getSavedEventIds(req.session.user, userData);
         const isSaved = savedIds.includes(event._id.toString());
-        return res.render('event', { event, isSaved });
+
+        let hasReported = false;
+        if (req.session.user && event.reportedBy && Array.isArray(event.reportedBy)) {
+            hasReported = event.reportedBy.some((id) => id.toString() === req.session.user._id);
+        }
+
+        return res.render('event', { event, isSaved, hasReported });
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }
@@ -248,6 +254,35 @@ router.post('/:id/unsave', async (req, res) => {
   try {
     await userData.removeSavedEvent(req.session.user._id, id);
     return res.redirect(`/events/${id}`);
+  } catch (e) {
+    return res.status(400).render('error', { error: e.toString() });
+  }
+});
+
+//Report event
+router.patch('/:id/report', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+
+  const id = validation.checkId(req.params.id);
+
+  try {
+    await eventData.reportEvent(id, req.session.user._id);
+    return res.redirect(`/events/${id}`);
+  } catch (e) {
+    return res.status(400).render('error', { error: e.toString() });
+  }
+});
+
+//Admin review event
+router.patch('/:id/review', async (req, res) => {
+  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user.isAdmin) return res.status(403).render('error', {error: 'You do not have permission to perform this action'});
+
+  const id = validation.checkId(req.params.id);
+  
+  try {
+    await eventData.reviewEvent(id);
+    return res.render('admin', {successMessage: 'Event marked as reviewed'});
   } catch (e) {
     return res.status(400).render('error', { error: e.toString() });
   }

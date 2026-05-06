@@ -18,6 +18,9 @@
       <li><a href="/users/calendar">Calendar</a></li>
       <li><a href="/events/search">Search</a></li>
       <li><a href="/events/create">Create an Event</a></li>
+      {{#if currentUser.isAdmin}}
+          <li><a href="/users/admin">Admin Dashboard</a></li>
+      {{/if}}
       {{#if currentUser}}
       <li>
       <form action="/users/logout" method="POST">

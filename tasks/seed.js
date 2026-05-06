@@ -43,7 +43,9 @@ const seed = async () => {
                 likeCount: 0,
                 reviewList: [],
                 checkedInList: [],
-                registeredList: []
+                registeredList: [],
+                totalReports: 0,
+                reportedBy: []
             };
 
             cleanedEvents.push(newEvent);

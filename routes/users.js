@@ -142,17 +142,10 @@ router.get('/admin', async (req, res) => {
     const user = await userData.getUserById(req.session.user._id);
 
     const eventsCollection = await events();
-    const createdEventDocs = await eventsCollection
-      .find({_id: {$in: user.createdEvents}})
-      .toArray();
+    const reportedEvents = await eventsCollection.find({totalReports: { $gt:2}}).toArray();
 
-    return res.render('profile', {
-      user: user,
-      upcomingEvents: [],
-      pastEvents: [],
-      createdEvents: createdEventDocs,
-      isOwnProfile: true,
-      isAdminPage: true
+    return res.render('admin', {
+      reportedEvents: reportedEvents
     });
   } catch (e) {
     return res.status(500).render('error', {error: e.toString()});
