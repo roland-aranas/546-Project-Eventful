@@ -435,7 +435,7 @@ async function reportEvent(eventId, userId, reviewedBy) {
 
     await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $inc: { totalReports: 1 }, $push: { reportedBy: new ObjectId(userId) }  });
 
-    if (event.totalReports + 1 >= 5) {
+    if (event.totalReports + 1 >= 3 && !event.reviewedByAdmin) {
         await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $set: { reviewedByAdmin: false} }
         );
     }
