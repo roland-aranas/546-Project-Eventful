@@ -2,6 +2,14 @@
 
 <script>
   const savedEvents = {{{json savedEvents}}};
+  const conflictingEvents = {{{json conflicts}}};
+  if(conflictingEvents && conflictingEvents.length > 0) {
+    alert('Warning: You have events in your calendar that may have time conflicts:\n' + conflictingEvents.map(e => e.title).join('\n'));
+    const conflictMessage = document.createElement('p');
+    conflictMessage.textContent = 'Warning: You have events in your calendar that may have time conflicts:\n' + conflictingEvents.map(e => e.title).join(', ');
+    conflictMessage.style.color = 'red';
+    document.body.insertBefore(conflictMessage, document.getElementById('calendar'));
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
