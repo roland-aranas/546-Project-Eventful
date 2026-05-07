@@ -99,6 +99,9 @@ router.route('/:id').get(async (req, res) => {
 
     try {
         const event = await eventData.getEventById(id);
+        if (!event) {
+            return res.status(404).json({error: 'Event not found'});
+        }
         const savedIds = await getSavedEventIds(req.session.user, userData);
         const isSaved = savedIds.includes(event._id.toString());
 
@@ -107,7 +110,19 @@ router.route('/:id').get(async (req, res) => {
             hasReported = event.reportedBy.some((id) => id.toString() === req.session.user._id);
         }
 
-        return res.render('event', { event, isSaved, hasReported });
+        let hasLiked = false;
+        if (req.session.user && event.likedBy && Array.isArray(event.likedBy)) {
+            hasLiked = event.likedBy.some((id) => id.toString() === req.session.user._id);
+        }
+
+        let hasDisliked = false;
+        if (!hasLiked){
+            if (req.session.user && event.dislikedBy && Array.isArray(event.dislikedBy)) {
+                hasDisliked = event.dislikedBy.some((id) => id.toString() === req.session.user._id);
+            }
+        }
+
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked});
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }
@@ -129,10 +144,14 @@ router.route('/').post(async (req, res) => {
     }
     // restructure location from flat form data into nested object
     const { parkNames, location, coordinates, ...rest } = eventInfo;
+    let hostedBy = req.session.user.username;
+    let createdBy = req.session.user._id;
 
     const newEvent = await eventData.createEvent({
       ...rest,
       cost: parseFloat(eventInfo.cost),
+      hostedBy,
+      createdBy,
       location: {
         parkNames,
         location,
@@ -222,10 +241,115 @@ router.route('/:id/like').post(async (req, res) => {
     } catch (e) {
         return res.status(400).json({error: e.message || e.toString()});
     }
+    let data = await eventData.getEventById(id);
+    if (!data) {
+        return res.status(404).json({error: 'Event not found'});
+    }
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to like an event'});
+    }
+    let event = await eventData.getEventById(id);
+    if (!event) {
+        return res.status(404).json({error: 'Event not found'});
+    }
+    if (event.likedBy && event.likedBy.some((id) => id.toString() === req.session.user._id)) {
+        return res.redirect(`/events/${id}`);
+    }
 
     try {
-        const updatedEvent = await eventData.likeEvent(id, req.session.user._id);
-        res.json({likeCount: updatedEvent.likeCount});
+        if (event.dislikedBy && event.dislikedBy.some((id) => id.toString() === req.session.user._id)) {
+            await eventData.undislikeEvent(id, req.session.user._id);
+        }
+        await eventData.likeEvent(id, req.session.user._id);
+        //reload the event page to show updated like count
+        return res.redirect(`/events/${id}`);
+    } catch (e) {
+        res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
+// Remove like
+router.route('/:id/unlike').post(async (req, res) => {
+    let id; 
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to unlike an event'});
+    }
+    let event = await eventData.getEventById(id);
+    if (!event) {
+        return res.status(404).json({error: 'Event not found'});
+    }
+    if (!event.likedBy || !event.likedBy.some((id) => id.toString() === req.session.user._id)) {
+        return res.redirect(`/events/${id}`);
+    }
+
+    try {
+        await eventData.unlikeEvent(id, req.session.user._id);
+        //reload the event page to show updated like count
+        return res.redirect(`/events/${id}`);
+    } catch (e) {
+        res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
+// Add dislike
+router.route('/:id/dislike').post(async (req, res) => {
+    let id;
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to dislike an event'});
+    }
+    let event = await eventData.getEventById(id);
+    if (!event) {
+        return res.status(404).json({error: 'Event not found'});
+    }
+    if (event.dislikedBy && event.dislikedBy.some((id) => id.toString() === req.session.user._id)) {
+        return res.redirect(`/events/${id}`);
+    }
+
+    try {
+        if (event.likedBy && event.likedBy.some((id) => id.toString() === req.session.user._id)) {
+            await eventData.unlikeEvent(id, req.session.user._id);
+        }
+        await eventData.dislikeEvent(id, req.session.user._id);
+        //reload the event page to show updated dislike count
+        return res.redirect(`/events/${id}`);
+    } catch (e) {
+        res.status(400).json({error: e.message || e.toString()});
+    }
+});
+
+// Remove dislike
+router.route('/:id/undislike').post(async (req, res) => {
+        let id;
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).json({error: e.message || e.toString()});
+    }
+    if (!req.session.user) {
+        return res.status(401).json({error: 'You must be logged in to dislike an event'});
+    }
+    let event = await eventData.getEventById(id);
+    if (!event) {
+        return res.status(404).json({error: 'Event not found'});
+    }
+    if (!event.dislikedBy || !event.dislikedBy.some((id) => id.toString() === req.session.user._id)) {
+        return res.redirect(`/events/${id}`);
+    }
+
+    try {
+        await eventData.undislikeEvent(id, req.session.user._id);
+        //reload the event page to show updated dislike count
+        return res.redirect(`/events/${id}`);
     } catch (e) {
         res.status(400).json({error: e.message || e.toString()});
     }

@@ -42,7 +42,26 @@ isSaved
 
     <div class="reactions">
         <!-- Don't think this is necessary tbh -->
-        <button class="like-btn" data-id="{{event._id}}">👍 Like ({{event.likeCount}})</button>
+
+        {{#if hasLiked}}
+            <form method="POST" action="/events/{{event._id}}/unlike">
+            <button type="submit" id="like-button" style="background-color: green; color: white;">👍 Like ({{event.likeCount}})</button>
+            </form>
+        {{else}}
+            <form method="POST" action="/events/{{event._id}}/like">
+            <button type="submit" id="like-button">👍 Like ({{event.likeCount}})</button>
+            </form>
+        {{/if}}
+
+        {{#if hasDisliked}}
+          <form method="POST" action="/events/{{event._id}}/undislike">
+            <button type="submit" id="dislike-button" style="background-color: red; color: white;">👎 Dislike ({{event.dislikeCount}})</button>
+            </form>
+        {{else}}
+            <form method="POST" action="/events/{{event._id}}/dislike">
+            <button type="submit" id="dislike-button">👎 Dislike ({{event.dislikeCount}})</button>
+            </form>
+        {{/if}}
     </div>
 
     <div class="comments">

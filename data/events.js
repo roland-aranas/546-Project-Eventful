@@ -53,7 +53,8 @@ async function createEvent({
     image = validation.checkOptionalString(image, 'Image');
     cost = validation.checkCost(cost);
     eventType = validation.checkOptionalString(eventType, 'Event type');
-    createdBy = validation.checkString(hostedBy, 'Hosted By');
+    createdBy = validation.checkString(createdBy, 'Created By');
+    hostedBy = validation.checkString(hostedBy, 'Hosted By');
 
     title = title.trim();
     description = description.trim();
@@ -84,9 +85,12 @@ async function createEvent({
         image,
         cost,
         eventType,
-        createdBy: new ObjectId(createdBy),
+        createdBy: createdBy,
         comments: [],
         likeCount: 0,
+        likedBy: [],
+        dislikeCount: 0,
+        dislikedBy: [],
         reviewList: [],
         checkedInList: [],
         registeredList: [],
@@ -98,9 +102,9 @@ async function createEvent({
     const result = await eventCollection.insertOne(newEvent);
     
     //autogenerates link to event within app 
-    const generatedLink = `/events/${id}`;
+    const generatedLink = `/events/${result.insertedId.toString()}`;
     await eventCollection.updateOne(
-        { _id: id },
+        { _id: result.insertedId },
         { $set: { link: generatedLink } }
     );
 
@@ -367,18 +371,15 @@ async function likeComment(eventId, commentId, userId) {
     );
 }
 
-async function likeReview(eventId, reviewId, userId) {
-    if (typeof eventId !== 'string' || typeof reviewId !== 'string' || typeof userId !== 'string') {
-        throw 'Error: eventId, reviewId, and userId must be strings';
+async function likeEvent(eventId, userId) {
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
     }
     eventId = eventId.trim();
-    reviewId = reviewId.trim();
+    userId = userId.trim();
     userId = userId.trim();
     if (!ObjectId.isValid(eventId)) {
         throw 'Error: Invalid event id';
-    }
-    if (!ObjectId.isValid(reviewId)) {
-        throw 'Error: Invalid review id';
     }
     if (!ObjectId.isValid(userId)) {
         throw 'Error: Invalid user id';
@@ -388,21 +389,115 @@ async function likeReview(eventId, reviewId, userId) {
     const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
     if (!event) throw 'Error: Event not found';
 
-    const review = event.reviewList?.find((r) => r._id.toString() === reviewId);
-    if (!review) throw 'Error: Review not found';
-
-    if (review.likedBy?.some((id) => id.toString() === userId)) {
-        throw 'Error: User already liked this review';
+    if (event.likedBy?.some((id) => id.toString() === userId)) {
+        throw 'Error: User already liked this event';
     }
 
     await eventCollection.updateOne(
+        { _id: new ObjectId(eventId) },
         {
-            _id: new ObjectId(eventId),
-            "reviewList._id": new ObjectId(reviewId)
-        },
+            $inc: { likeCount: 1 },
+            $push: { likedBy: new ObjectId(userId) }
+        }
+    );
+}
+
+async function unlikeEvent(eventId, userId) {
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
+    }
+    eventId = eventId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
+
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    if (!event.likedBy || !event.likedBy.some((id) => id.toString() === userId)) {
+        throw 'Error: User has not liked this event';
+    }
+
+    await eventCollection.updateOne(
+        { _id: new ObjectId(eventId) },
         {
-            $inc: { "reviewList.$.numLikes": 1 },
-            $push: { "reviewList.$.likedBy": new ObjectId(userId) }
+            $inc: { likeCount: -1 },
+            $pull: { likedBy: new ObjectId(userId) }
+        }
+    );
+}
+
+async function dislikeEvent(eventId, userId) {
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
+    }
+    eventId = eventId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
+
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    if (event.dislikedBy && event.dislikedBy.some((id) => id.toString() === userId)) {
+        throw 'Error: User already disliked this event';
+    }
+
+    if (event.likedBy && event.likedBy.some((id) => id.toString() === userId)) {
+        await eventCollection.updateOne(
+            { _id: new ObjectId(eventId) },
+            {
+                $inc: { likeCount: -1 },
+                $pull: { likedBy: new ObjectId(userId) }
+            }
+        );
+    }
+
+    await eventCollection.updateOne(
+        { _id: new ObjectId(eventId) },
+        {
+            $inc: { dislikeCount: 1 },
+            $push: { dislikedBy: new ObjectId(userId) }
+        }
+    );
+}
+
+async function undislikeEvent(eventId, userId) {
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
+    }
+    eventId = eventId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
+
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    if (!event.dislikedBy || !event.dislikedBy.some((id) => id.toString() === userId)) {
+        throw 'Error: User has not disliked this event';
+    }
+
+    await eventCollection.updateOne(
+        { _id: new ObjectId(eventId) },
+        {
+            $inc: { dislikeCount: -1 },
+            $pull: { dislikedBy: new ObjectId(userId) }
         }
     );
 }
@@ -457,10 +552,6 @@ async function reviewEvent(eventId) {
     await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $set: {totalReports: 0, reportedBy: [] } });
     await eventCollection.updateOne({ _id: new ObjectId(eventId) },{ $unset: { reviewedByAdmin: "" } }
     );
-}
-
-async function likeEvent(eventId, userId) {
-    console.log("like and event");
 }
 
 async function searchEvents(keyword) {
@@ -525,4 +616,4 @@ async function getSortedEvents({sortBy = 'startDate', order = 'asc', borough, ev
     return await eventCollection.find(filter).sort(sortQuery).toArray();
 }
 
-export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, addReview, likeReview, searchEvents, getSortedEvents, reportEvent, reviewEvent};
+export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, likeEvent, unlikeEvent, undislikeEvent, dislikeEvent, addReview, searchEvents, getSortedEvents, reportEvent, reviewEvent};
