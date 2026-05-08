@@ -253,10 +253,13 @@ async function addComment(eventId, userId, textContent) {
     const eventCollection = await events();
     const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
     if (!event) throw 'Error: Event not found';
+    const data = await users();
+    const user = await data.findOne({_id: new ObjectId(userId)});
 
     const newComment = {
         _id: new ObjectId(),
         userID: new ObjectId(userId),
+        username: user.username,
         createdAt: new Date(),
         textContent: textContent.trim(),
         likes: 0,

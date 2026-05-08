@@ -121,8 +121,12 @@ router.route('/:id').get(async (req, res) => {
                 hasDisliked = event.dislikedBy.some((id) => id.toString() === req.session.user._id);
             }
         }
+        let isAuthor = false;
+        if (req.session.user && event.createdBy) {
+            isAuthor = event.createdBy.toString() === req.session.user._id;
+        }
 
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked});
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor});
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }
@@ -201,7 +205,7 @@ router.route('/:id').patch(async (req, res) => {
             return res.status(403).json({error: 'You do not have permission to update this event'});
         }
         const updatedEvent = await eventData.updateEvent(id, eventInfo);
-        return res.json(updatedEvent);
+        return res.redirect(`/events/${id}`);
     } catch (e) {
         return res.status(400).json({error: e.message || e.toString()});
     }
@@ -227,7 +231,7 @@ router.route('/:id').delete(async (req, res) => {
         if (existingEvent.createdBy) {
             await userData.removeCreatedEvent(existingEvent.createdBy.toString(), id);
         }
-        return res.json({deleted: true, event: deletedEvent});
+        return res.redirect('/events/home');
     } catch (e) {
         return res.status(404).json({error: e.message || e.toString()});
     }
@@ -410,6 +414,47 @@ router.patch('/:id/review', async (req, res) => {
   } catch (e) {
     return res.status(400).render('error', { error: e.toString() });
   }
+});
+
+//Add comment
+router.post('/:id/comment', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    const id = validation.checkId(req.params.id);
+    const textContent = validation.checkString(req.body.commentInput, 'Comment');
+
+    try {
+        const newComment = await eventData.addComment(id, req.session.user._id, textContent);
+        let username = null;
+        try {
+            const fullUser = await userData.getUserById(req.session.user._id);
+            username = fullUser.username;
+        } catch (ue) {
+            username = req.session.user.username || null;
+        }
+
+        return res.redirect(`/events/${id}`);
+    } catch (e) {
+        if (req.headers.accept?.includes('application/json')) {
+            return res.status(400).json({ success: false, error: e.message || e.toString() });
+        }
+        return res.status(400).render('error', { error: e.toString() });
+    }
+});
+
+//Remove comment
+router.route('/:eventId/comment/:commentId').delete(async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    const eventId = validation.checkId(req.params.eventId);
+    const commentId = validation.checkId(req.params.commentId);
+
+    try {
+        await eventData.removeComment(eventId, commentId, req.session.user._id);
+        return res.redirect(`/events/${eventId}`);
+    } catch (e) {
+        return res.status(400).render('error', { error: e.toString() });
+    }
 });
 
 export default router;

@@ -91,7 +91,7 @@ router.post('/signup', async (req, res) => {
       password,
       borough
     });
-    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, isAdmin: newUser.isAdmin, borough: user.borough};
+    req.session.user = {_id: newUser._id.toString(), username: newUser.username, firstName: newUser.firstName, lastName: newUser.lastName, isAdmin: newUser.isAdmin, borough: newUser.borough};
     return res.redirect('/');
   } catch (e) {
     return res.status(400).render('signup', { error: e });
