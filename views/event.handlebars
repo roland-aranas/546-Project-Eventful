@@ -40,6 +40,37 @@ isSaved
   </div>
 </section>
 
+<section class="edit-event">
+  {{#if isAuthor}}
+    <details style="margin-top: 0.5rem;">
+      <summary>Update Event</summary>
+      <form action="/events/{{event._id}}" method="POST" style="display: flex; flex-direction: column; margin-top: 5px; gap: 0.5rem;">
+        <input type="hidden" name="_method" value="PATCH">
+        <input name="title" type="text" value="{{event.title}}" placeholder="Title">
+        <input name="description" type="text" value="{{event.description}}" placeholder="Description">
+        <input name="registrationUrl" type="text" value="{{event.registrationUrl}}" placeholder="Registration URL">
+        <input name="registrationDescription" type="text" value="{{event.registrationDescription}}" placeholder="Registration Description">
+        <input name="startDate" type="text" value="{{event.startDate}}" placeholder="Start Date">
+        <input type="text" name="endDate" value="{{event.endDate}}" placeholder="End Date">
+        <input type="text" name="startTime" value="{{event.startTime}}" placeholder="Start Time">
+        <input type="text" name="endTime" value="{{event.endTime}}" placeholder="End Time">
+        <input type="text" name="contactPhone" value="{{event.contactPhone}}" placeholder="Contact Phone">
+        <input type="text" name="location[parkNames]" value="{{event.location.parkNames}}" placeholder="Location park names">
+        <input type="text" name="location[location]" value="{{event.location.location}}" placeholder="Location address">
+        <input type="text" name="location[coordinates]" value="{{event.location.coordinates}}" placeholder="Location coordinates">
+        <input type="text" name="image" value="{{event.image}}" placeholder="Image URL">
+        <input type="text" name="cost" value="{{event.cost}}" placeholder="Cost">
+        <input type="text" name="eventType" value="{{event.eventType}}" placeholder="Event Type">
+        <button type="submit">Submit Updates</button>
+      </form>
+    </details>
+    <form action="/events/{{event._id}}" method="POST" style="display: inline;">
+      <input type="hidden" name="_method" value="DELETE">
+      <button type="submit">Delete Event</button>
+    </form>
+  {{/if}}
+</section>
+
     <div class="reactions">
         <!-- Don't think this is necessary tbh -->
 
@@ -64,13 +95,13 @@ isSaved
         {{/if}}
     </div>
 
-    <div class="comments">
+    <div id="commentsList" class="comments">
         <h3>Comments</h3>
         {{#if event.comments.length}}
         {{#each event.comments}}
         <div class="comment">
-        <p class="comment-author">{{this.author}}</p>
-        <p class="comment-text">{{this.textContent}}</p>
+          <p class="comment-author">{{this.username}}</p>
+          <p class="comment-text">{{this.textContent}}</p>
         </div>
         {{/each}}
         {{else}}
@@ -90,8 +121,11 @@ isSaved
     </div>
 
     <div class="add-comment">
-        <textarea id="commentInput" placeholder="Leave a comment..."></textarea>
-        <button class="submit-comment">Post Comment</button>
+        <form id="commentForm" method="POST" action="/events/{{event._id}}/comment">
+          <textarea id="commentInput" name="commentInput" placeholder="Leave a comment..."></textarea>
+          <div id="commentError" class="comment-error" aria-live="polite" style="color: red; margin-top: 0.5rem;"></div>
+          <button type="submit" class="submit-comment">Post Comment</button>
+        </form>
     </div>
 
 
