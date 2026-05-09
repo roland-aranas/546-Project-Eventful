@@ -5,6 +5,12 @@ import * as eventData from '../data/events.js';
 import * as validation from '../helper.js';
 import { getSavedEventIds, attachIsSaved } from '../helper.js';
 import userData from '../data/users.js';
+import { geocodeLocation } from '../data/mapbox.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN;
 
 const router = Router();
 
@@ -126,7 +132,7 @@ router.route('/:id').get(async (req, res) => {
             isAuthor = event.createdBy.toString() === req.session.user._id;
         }
 
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor});
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, mapboxToken: MAPBOX_TOKEN});
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }

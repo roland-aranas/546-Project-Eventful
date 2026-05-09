@@ -45,9 +45,11 @@ import configRoutes from './routes/index.js';
 import express from 'express';
 import { engine } from "express-handlebars";
 import session from 'express-session';
+import dotenv from "dotenv";
 // import eventRoutes from './routes/events.js';
 console.log('2 - after imports');
 
+dotenv.config();
 const app = express();
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {

@@ -57,7 +57,8 @@ isSaved
         <input type="text" name="contactPhone" value="{{event.contactPhone}}" placeholder="Contact Phone">
         <input type="text" name="location[parkNames]" value="{{event.location.parkNames}}" placeholder="Location park names">
         <input type="text" name="location[location]" value="{{event.location.location}}" placeholder="Location address">
-        <input type="text" name="location[coordinates]" value="{{event.location.coordinates}}" placeholder="Location coordinates">
+        <input type="text" name="location[coordinates][lat]" value="{{event.location.coordinates.lat}}">
+        <input type="text" name="location[coordinates][lng]" value="{{event.location.coordinates.lng}}">
         <input type="text" name="image" value="{{event.image}}" placeholder="Image URL">
         <input type="text" name="cost" value="{{event.cost}}" placeholder="Cost">
         <input type="text" name="eventType" value="{{event.eventType}}" placeholder="Event Type">
@@ -69,6 +70,37 @@ isSaved
       <button type="submit">Delete Event</button>
     </form>
   {{/if}}
+</section>
+
+<section class="map-container">
+    <div id="map" style="height: 300px; width: 100%;"></div>
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+    <script>
+        mapboxgl.accessToken = "{{mapboxToken}}";
+
+        const parts = "{{{event.location.coordinates}}}".split(",");
+        const lat = parseFloat(parts[0]);
+        const lng = parseFloat(parts[1]);
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+            const map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v12",
+                center: [lng, lat],
+                zoom: 15
+            });
+
+            // this took 100000 years to figure out
+            new mapboxgl.Marker()
+                .setLngLat([lng, lat])
+                .addTo(map);
+
+            map.addControl(new mapboxgl.NavigationControl());
+        }
+    </script>
 </section>
 
     <div class="reactions">

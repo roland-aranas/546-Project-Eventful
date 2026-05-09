@@ -1,6 +1,7 @@
 import {ObjectId} from 'mongodb';
 import {events, users} from '../config/mongoCollections.js';
 import * as validation from '../helper.js';
+import { geocodeLocation } from './mapbox.js';
 
 
 async function getAllEvents() {
@@ -49,7 +50,7 @@ async function createEvent({
     startTime = checkedDateTime.startTime;
     endTime = checkedDateTime.endTime;
     contactPhone = validation.checkOptionalString(contactPhone, 'Contact phone');
-    location = validation.checkLocation(location);
+    location = validation.checkLocationString(location);
     image = validation.checkOptionalString(image, 'Image');
     cost = validation.checkCost(cost);
     eventType = validation.checkOptionalString(eventType, 'Event type');
@@ -64,7 +65,15 @@ async function createEvent({
     endTime = endTime.trim();
     location.parkNames = location.parkNames.trim();
     location.location = location.location.trim();
-    location.coordinates = location.coordinates.trim();
+
+    location = validation.checkLocationString(location);
+
+    const geo = await geocodeLocation(location.location);
+
+    location.coordinates = {
+        lat: geo.lat,
+        lng: geo.lng
+    };
     
     const newEvent = {
         title,
@@ -80,7 +89,8 @@ async function createEvent({
         location: {
             parkNames: location.parkNames,
             location: location.location,
-            coordinates: location.coordinates
+            borough: location.borough,
+            coordinates: location.coordinates,
         },
         image,
         cost,
@@ -159,8 +169,21 @@ async function updateEvent(id, updates){
                     throw `Error: location.${locKey} cannot be updated`;
                 }
 
-                update_data[`location.${locKey}`] =
-                    validation.checkString(updates.location[locKey], `Location ${locKey}`);
+                if (locKey === "coordinates") {
+                    if (!updates.location.coordinates ||typeof updates.location.coordinates !== "object") {
+                        throw "Error: coordinates must be an object with lat and lng";
+                    }
+                
+                    const lat = Number(updates.location.coordinates.lat);
+                    const lng = Number(updates.location.coordinates.lng);
+                
+                    if (isNaN(lat) || isNaN(lng)) {
+                        throw "Error: coordinates must be numbers";
+                    }
+                
+                    update_data.location = update_data.location || {};
+                    update_data.location.coordinates = {lat,lng };
+                }
             }
 
             for(let key of Object.keys(updates)){

@@ -57,8 +57,12 @@ function validateCreateEvent({
     if (!location.location || typeof location.location !== 'string' || location.location.trim().length === 0) {
         throw 'Error: You must provide a valid location';
     }
-    if (!location.coordinates || typeof location.coordinates !== 'string' || location.coordinates.trim().length === 0) {
+    if (!location.coordinates || typeof location.coordinates !== 'object'
+    ) {
         throw 'Error: You must provide valid coordinates';
+    }
+    if (typeof location.coordinates.lat !== 'number' ||typeof location.coordinates.lng !== 'number') {
+        throw 'Error: Coordinates must include numeric lat and lng';
     }
     if (cost === undefined || typeof cost !== 'number' || cost < 0) {
         throw 'Error: You must provide a valid cost';
@@ -73,7 +77,6 @@ function validateCreateEvent({
     endTime = endTime.trim();
     location.parkNames = location.parkNames.trim();
     location.location = location.location.trim();
-    location.coordinates = location.coordinates.trim();
 
     return {
         title,
@@ -253,14 +256,18 @@ function validateLocation(location) {
     if (!location.location || typeof location.location !== 'string') {
         throw 'Error: You must provide a valid location';
     }
-    if (!location.coordinates || typeof location.coordinates !== 'string') {
-        throw 'Error: You must provide a valid coordinates';
+    if (!location.coordinates || typeof location.coordinates !== 'object'
+    ) {
+        throw 'Error: You must provide valid coordinates';
+    }
+    if (typeof location.coordinates.lat !== 'number' ||typeof location.coordinates.lng !== 'number') {
+        throw 'Error: Coordinates must include numeric lat and lng';
     }
 
     return {
         parknames: location.parknames.trim(),
         location: location.location.trim(),
-        coordinates: location.coordinates.trim()
+        coordinates: location.coordinates
     };
 }
 

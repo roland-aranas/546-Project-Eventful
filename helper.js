@@ -36,10 +36,43 @@ export const checkLocation = (location) => {
   if (!location || typeof location !== 'object' || Array.isArray(location)) {
     throw 'Error: Location must be an object';
   }
+  if (!location.parkNames || typeof location.parkNames !== 'string') {
+    throw 'Error: Park name must be a string';
+  }
+  if (!location.location || typeof location.location !== 'string') {
+    throw 'Error: Location must be a string';
+  }
+  if (location.borough && typeof location.borough !== 'string') {
+    throw 'Error: Borough must be a string';
+  }
+
   return {
-    parkNames: checkString(location.parkNames, 'Park name'),
-    location: checkString(location.location, 'Location'),
-    coordinates: checkString(location.coordinates, 'Coordinates')
+    parkNames: location.parkNames.trim(),
+    location: location.location.trim(),
+    borough: location.borough ? location.borough.trim() : null
+  };
+};
+export const checkLocationString = (location) => {
+  if (!location || typeof location !== 'object' || Array.isArray(location)) {
+    throw 'Error: Location must be an object';
+  }
+
+  if (!location.parkNames || typeof location.parkNames !== 'string') {
+    throw 'Error: Park name must be a string';
+  }
+
+  if (!location.location || typeof location.location !== 'string') {
+    throw 'Error: Location must be a string';
+  }
+
+  if (location.borough && typeof location.borough !== 'string') {
+    throw 'Error: Borough must be a string';
+  }
+
+  return {
+    parkNames: location.parkNames.trim(),
+    location: location.location.trim(),
+    borough: location.borough ? location.borough.trim() : null
   };
 };
 
