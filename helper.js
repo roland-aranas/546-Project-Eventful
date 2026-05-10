@@ -196,6 +196,14 @@ export const attachIsSaved = (events, savedEventIds) => {
   }));
 };
 
+export const checkRating = (rating) => {
+  const num = Number(rating);
+  if (typeof num !== 'number' || Number.isNaN(num) || num < 1 || num > 5) {
+    throw 'Error: Rating must be a number between 1 and 5';
+  }
+  return num;
+};
+
 export const getSavedEventIds = async (user, userData) => {
   if (!user) return [];
   const fullUser = await userData.getUserById(user._id);
