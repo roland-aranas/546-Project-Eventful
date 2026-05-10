@@ -79,12 +79,13 @@ router.post('/signup', async (req, res) => {
     return res.status(400).render('signup', {error: 'Invalid request body'});
   }
 
-  const { firstName, lastName, age, email, username, password, borough } = req.body;
+  let { firstName, lastName, age, email, username, password, borough } = req.body;
 
   try {
     const parsedAge = parseInt(age);
     if (isNaN(parsedAge)) throw 'Age must be a number';
     if (parsedAge < 13) throw 'You must be at least 13 years old to create an account';
+    password = validation.checkPassword(password);
     const newUser = await userData.createUser({
       firstName,
       lastName,

@@ -210,3 +210,12 @@ export const getSavedEventIds = async (user, userData) => {
   return fullUser.savedEvents.map(id => id.toString());
 };
 
+export const checkPassword = (str) => {
+  if (!str || typeof str !== 'string') throw `Password must be supplied`;
+  if (str.trim().length === 0) throw `Password cannot be empty`;
+  if (/\s/.test(str)) throw `Password cannot contain spaces`;
+  if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/.test(str)) {
+    throw `Password must be at least 8 characters and contain an uppercase letter, a number, and a special character`;
+  }
+  return str;
+};

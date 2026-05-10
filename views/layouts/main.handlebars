@@ -30,6 +30,7 @@
             {{/if}}
             {{#if currentUser}}
             <li>
+              {{!-- <a class="logout" href="/users/logout">Logout</a> --}}
             <form action="/users/logout" method="POST">
               <button class="logout" type="submit">Logout</button>
             </form>
