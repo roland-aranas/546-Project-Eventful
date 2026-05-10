@@ -117,7 +117,7 @@ router.route('/').get(async (req, res) => {
         const events = await eventData.getAllEvents();
         return res.json(events);
     } catch (e) {
-        return res.status(500).json({error: e || e.toString()});
+        return res.status(500).render('error', {error: e.message || e.toString()});
     }
 });
 
@@ -127,13 +127,13 @@ router.route('/:id').get(async (req, res) => {
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 
     try {
         const event = await eventData.getEventById(id);
         if (!event) {
-            return res.status(404).json({error: 'Event not found'});
+            return res.status(404).render('error', {error: 'Event not found'});
         }
         const savedIds = await getSavedEventIds(req.session.user, userData);
         const isSaved = savedIds.includes(event._id.toString());
@@ -166,14 +166,14 @@ router.route('/:id').get(async (req, res) => {
             hasCheckedIn = event.checkedInList.some((id) => id.toString() === req.session.user._id);
         }
         let canReview = false;
-        if (event.checkedInList && Array.isArray(event.checkedInList) && event.checkedInList.some((id) => id.toString() === req.session.user._id)) {
+        if (req.session.user && event.checkedInList && Array.isArray(event.checkedInList) && event.checkedInList.some((id) => id.toString() === req.session.user._id)) {
             if (event.reviewList && Array.isArray(event.reviewList) && event.reviewList.every((r) => r.userID.toString() !== req.session.user._id) && new Date(event.endDate) < new Date()) {
                 canReview = true;
             }
         }
         return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN});
     } catch (e) {
-        return res.status(404).json({error: e || e.toString()});
+        return res.status(404).render('error', {error: e.message || e.toString()});
     }
 });
 
@@ -186,30 +186,28 @@ router.route('/').post(async (req, res) => {
     let eventInfo = req.body;
 
     if (!eventInfo || typeof eventInfo !== 'object' || Array.isArray(eventInfo)) {
-        return res.status(400).json({error: 'You must provide event data'});
+        return res.status(400).render('error', {error: 'You must provide event data'});
     }
     if (Object.keys(eventInfo).length === 0) {
-        return res.status(400).json({error: 'No data provided'});
+        return res.status(400).render('error', {error: 'No data provided'});
     }
     // restructure location from flat form data into nested object
     const { parkNames, location, coordinates, ...rest } = eventInfo;
     let hostedBy = req.session.user.username;
     let createdBy = req.session.user._id;
 
-    const newEvent = await eventData.createEvent({
-      ...rest,
-      cost: parseFloat(eventInfo.cost),
-      hostedBy,
-      createdBy,
-      location: {
-        parkNames,
-        location,
-        coordinates
-      }
+    try{
+        const newEvent = await eventData.createEvent({
+        ...rest,
+        cost: parseFloat(eventInfo.cost),
+        hostedBy,
+        createdBy,
+        location: {
+            parkNames,
+            location,
+            coordinates
+        }
     });
-
-
-    try {
         eventInfo.hostedBy = req.session.user.username;
         eventInfo.createdBy = req.session.user._id;
         
@@ -219,7 +217,8 @@ router.route('/').post(async (req, res) => {
         );
         return res.redirect(`/events/${newEvent._id}`);
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(500).render('error', { error: e.message || e.toString() });
+        // return res.status(400).json({error: e.message || e.toString()});
     }
 });
 
@@ -229,30 +228,30 @@ router.route('/:id').patch(async (req, res) => {
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 
     if (!req.session.user) {
-        return res.status(401).json({error: 'You must be logged in to update an event'});
+        return res.status(401).render('error', {error: 'You must be logged in to update an event'});
     }
 
     let eventInfo = req.body;
     if (!eventInfo || typeof eventInfo !== 'object' || Array.isArray(eventInfo)) {
-        return res.status(400).json({error: 'You must provide update data'});
+        return res.status(400).render('error', {error: 'You must provide update data'});
     }
     if (Object.keys(eventInfo).length === 0) {
-        return res.status(400).json({error: 'No fields provided'});
+        return res.status(400).render('error', {error: 'No fields provided'});
     }
 
     try {
         const existingEvent = await eventData.getEventById(id);
         if (existingEvent.createdBy && existingEvent.createdBy.toString() !== req.session.user._id && !req.session.user.isAdmin) {
-            return res.status(403).json({error: 'You do not have permission to update this event'});
+            return res.status(403).render('error', {error: 'You do not have permission to update this event'});
         }
         const updatedEvent = await eventData.updateEvent(id, eventInfo);
         return res.redirect(`/events/${id}`);
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 });
 
@@ -262,15 +261,15 @@ router.route('/:id').delete(async (req, res) => {
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
     if (!req.session.user) {
-        return res.status(401).json({error: 'You must be logged in to delete an event'});
+        return res.status(401).render('error', {error: 'You must be logged in to delete an event'});
     }
     try {
         const existingEvent = await eventData.getEventById(id);
         if (existingEvent.createdBy && existingEvent.createdBy.toString() !== req.session.user._id && !req.session.user.isAdmin) {
-            return res.status(403).json({error: 'You do not have permission to delete this event'});
+            return res.status(403).render('error', {error: 'You do not have permission to delete this event'});
         }
         const deletedEvent = await eventData.deleteEvent(id);
         if (existingEvent.createdBy) {
@@ -278,28 +277,31 @@ router.route('/:id').delete(async (req, res) => {
         }
         return res.redirect('/events/home');
     } catch (e) {
-        return res.status(404).json({error: e.message || e.toString()});
+        return res.status(404).render('error', {error: e.message || e.toString()});
     }
 });
 
 // ADD linke
 router.route('/:id/like').post(async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/users/login');
+    }
     let id;
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
     let data = await eventData.getEventById(id);
     if (!data) {
-        return res.status(404).json({error: 'Event not found'});
+        return res.status(404).render('error', {error: 'Event not found'});
     }
     if (!req.session.user) {
-        return res.status(401).json({error: 'You must be logged in to like an event'});
+        return res.status(401).render('error', {error: 'You must be logged in to like an event'});
     }
     let event = await eventData.getEventById(id);
     if (!event) {
-        return res.status(404).json({error: 'Event not found'});
+        return res.status(404).render('error', {error: 'Event not found'});
     }
     if (event.likedBy && event.likedBy.some((id) => id.toString() === req.session.user._id)) {
         return res.redirect(`/events/${id}`);
@@ -313,7 +315,7 @@ router.route('/:id/like').post(async (req, res) => {
         //reload the event page to show updated like count
         return res.redirect(`/events/${id}`);
     } catch (e) {
-        res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 });
 
@@ -323,14 +325,14 @@ router.route('/:id/unlike').post(async (req, res) => {
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
     if (!req.session.user) {
-        return res.status(401).json({error: 'You must be logged in to unlike an event'});
+        return res.status(401).render('error', {error: 'You must be logged in to unlike an event'});
     }
     let event = await eventData.getEventById(id);
     if (!event) {
-        return res.status(404).json({error: 'Event not found'});
+        return res.status(404).render('error', {error: 'Event not found'});
     }
     if (!event.likedBy || !event.likedBy.some((id) => id.toString() === req.session.user._id)) {
         return res.redirect(`/events/${id}`);
@@ -341,24 +343,24 @@ router.route('/:id/unlike').post(async (req, res) => {
         //reload the event page to show updated like count
         return res.redirect(`/events/${id}`);
     } catch (e) {
-        res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 });
 
 // Add dislike
 router.route('/:id/dislike').post(async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/users/login');
+    }
     let id;
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
-    }
-    if (!req.session.user) {
-        return res.status(401).json({error: 'You must be logged in to dislike an event'});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
     let event = await eventData.getEventById(id);
     if (!event) {
-        return res.status(404).json({error: 'Event not found'});
+        return res.status(404).render('error', {error: 'Event not found'});
     }
     if (event.dislikedBy && event.dislikedBy.some((id) => id.toString() === req.session.user._id)) {
         return res.redirect(`/events/${id}`);
@@ -372,7 +374,7 @@ router.route('/:id/dislike').post(async (req, res) => {
         //reload the event page to show updated dislike count
         return res.redirect(`/events/${id}`);
     } catch (e) {
-        res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 });
 
@@ -382,14 +384,14 @@ router.route('/:id/undislike').post(async (req, res) => {
     try {
         id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
     if (!req.session.user) {
-        return res.status(401).json({error: 'You must be logged in to dislike an event'});
+        return res.status(401).render('error', {error: 'You must be logged in to dislike an event'});
     }
     let event = await eventData.getEventById(id);
     if (!event) {
-        return res.status(404).json({error: 'Event not found'});
+        return res.status(404).render('error', {error: 'Event not found'});
     }
     if (!event.dislikedBy || !event.dislikedBy.some((id) => id.toString() === req.session.user._id)) {
         return res.redirect(`/events/${id}`);
@@ -400,13 +402,13 @@ router.route('/:id/undislike').post(async (req, res) => {
         //reload the event page to show updated dislike count
         return res.redirect(`/events/${id}`);
     } catch (e) {
-        res.status(400).json({error: e.message || e.toString()});
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 });
 
 // SAVE
 router.post('/:id/save', async (req, res) => {
-  if (!req.session.user) return res.redirect('/user/login');
+  if (!req.session.user) return res.redirect('/users/login');
 
   const id = validation.checkId(req.params.id);
 
@@ -420,7 +422,7 @@ router.post('/:id/save', async (req, res) => {
 
 // UNSAVE
 router.post('/:id/unsave', async (req, res) => {
-  if (!req.session.user) return res.redirect('/user/login');
+  if (!req.session.user) return res.redirect('/users/login');
 
   const id = validation.checkId(req.params.id);
 
@@ -434,7 +436,7 @@ router.post('/:id/unsave', async (req, res) => {
 
 //Report event
 router.patch('/:id/report', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user) return res.redirect('/users/login');
 
   const id = validation.checkId(req.params.id);
 
@@ -448,7 +450,7 @@ router.patch('/:id/report', async (req, res) => {
 
 //Admin review event
 router.patch('/:id/review', async (req, res) => {
-  if (!req.session.user) return res.redirect('/user/login');
+  if (!req.session.user) return res.redirect('/users/login');
   if (!req.session.user.isAdmin) return res.status(403).render('error', {error: 'You do not have permission to perform this action'});
 
   const id = validation.checkId(req.params.id);
@@ -463,7 +465,7 @@ router.patch('/:id/review', async (req, res) => {
 
 //Add comment
 router.post('/:id/comment', async (req, res) => {
-    if (!req.session.user) return res.redirect('/user/login');
+    if (!req.session.user) return res.redirect('/users/login');
 
     const id = validation.checkId(req.params.id);
     const textContent = validation.checkString(req.body.commentInput, 'Comment');
@@ -481,7 +483,7 @@ router.post('/:id/comment', async (req, res) => {
         return res.redirect(`/events/${id}`);
     } catch (e) {
         if (req.headers.accept?.includes('application/json')) {
-            return res.status(400).json({ success: false, error: e.message || e.toString() });
+            return res.status(400).render('error', { error: e.message || e.toString() });
         }
         return res.status(400).render('error', { error: e.toString() });
     }
@@ -489,7 +491,7 @@ router.post('/:id/comment', async (req, res) => {
 
 //Remove comment
 router.route('/:eventId/comment/:commentId').delete(async (req, res) => {
-    if (!req.session.user) return res.redirect('/user/login');
+    if (!req.session.user) return res.redirect('/users/login');
 
     const eventId = validation.checkId(req.params.eventId);
     const commentId = validation.checkId(req.params.commentId);
@@ -546,13 +548,16 @@ router.post('/:eventId/reviews', async (req, res) => {
 
         return res.redirect(`/events/${id}`);
     } catch (e) {
-        return res.status(400).render('error', {error: e.message || e.toString()});
+        if (req.headers.accept?.includes('application/json')) {
+            return res.status(400).render('error', { error: e.message || e.toString() });
+        }
+        return res.status(400).render('error', { error: e.toString() });
     }
 });
 
 //Check in 
 router.post('/:id/checkin', async (req, res) => {
-    if (!req.session.user) return res.redirect('/users/login');
+  if (!req.session.user) return res.redirect('/users/login');
 
     const id = validation.checkId(req.params.id);
 
