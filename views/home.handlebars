@@ -7,9 +7,14 @@ user (current user)
 <main class="container">
   <section class="hero card hero-card">
     <h1>Park Party</h1>
-    <h3>Welcome {{user.firstName}}!</h3>
+    {{#if user}}
+      <h3>Welcome {{user.firstName}}!</h3>
+    {{else}}
+      <h3>Welcome to Park Party!</h3>
+    {{/if}}
   </section>
 
+{{#if user}}
   <section class="next_event card">
     <h3>Your Next Event: </h3>
     {{#if nextEvent}}
@@ -28,15 +33,30 @@ user (current user)
         {{/if}}
     </a>
     {{else}}
-    <p>No Events Planned</p>
+    <p>No Events Planned Today!</p>
     {{/if}}
   </section>
+  {{/if}}
 
   <section class="recommended card">
+{{#if user}}
       <h2>Events Today in {{user.borough}}</h2>
-
-    {{#if recEvents.length}}
-      {{#each recEvents}}
+{{else}}
+      <form method="GET" action="/events/home">
+      <h2>Events Today in 
+        <select name="borough">
+          <option value="Manhattan">Manhattan</option>
+          <option value="Brooklyn">Brooklyn</option>
+          <option value="Queens">Queens</option>
+          <option value="Bronx">Bronx</option>
+          <option value="Staten Island">Staten Island</option>
+        </select>
+      </h2>
+      <button type="submit">Go</button>
+    </form>
+{{/if}}
+    {{#if todayByBorough.length}}
+      {{#each todayByBorough}}
         <a href="/events/{{this._id}}" class="event-card">
           <img src="{{this.image}}" alt="{{this.title}}">
           <h3>{{this.title}}</h3>

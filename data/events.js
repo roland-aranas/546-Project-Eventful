@@ -1,7 +1,6 @@
 import {ObjectId} from 'mongodb';
-import {events, users} from '../config/mongoCollections.js';
+import {events, users, todayEvent} from '../config/mongoCollections.js';
 import * as validation from '../helper.js';
-import { geocodeLocation } from './mapbox.js';
 
 
 async function getAllEvents() {
@@ -65,17 +64,6 @@ async function createEvent({
     endTime = endTime.trim();
     location.parkNames = location.parkNames.trim();
     location.location = location.location.trim();
-
-    // location = validation.checkLocationString(location);
-
-
-// const geo = await geocodeLocation(location.location);
-    // location.coordinates = {
-    //     lat: geo.lat,
-    //     lng: geo.lng
-    // };
-
-
     
     const newEvent = {
         title,
@@ -663,4 +651,65 @@ async function checkInEvent(eventId, userId) {
     );
 }
 
-export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, likeEvent, unlikeEvent, undislikeEvent, dislikeEvent, addReview, searchEvents, getSortedEvents, reportEvent, reviewEvent, checkInEvent};
+async function findTodayEvents() {
+    //get all events from today and finds the boroughs via mapbox location api. separates it into 5 borough lists for the day, saved into mongo.
+    //mongo collection items have {date : today date, boroughs:  {Manhattan: event1, event2}, Brooklyn: {event1}} etc
+    const eventCollection = await events();
+    const todayEventsCollection = await todayEvent();
+    const today = new Date().toISOString().split('T')[0];
+
+    const todaysEvents = await eventCollection.find({startDate: today}).toArray();
+
+    for (const event of todaysEvents) {
+        if (event.location?.borough) continue;
+        try {
+            const locationString = event.location?.location || event.location?.parknames;
+            if (!locationString) continue;
+
+            const borough = await getBoroughFromLocation(locationString);
+            if (borough) {
+                await eventCollection.updateOne({_id: event._id}, {$set:{'location.borough': borough}});
+                event.location.borough = borough;
+            }
+        } catch {
+            event.location.borough = null;
+        }
+    }
+
+    const boroughs = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx',  'Staten Island'];
+    const grouped = {};
+
+    for (const borough of boroughs) {
+        grouped[borough] = todaysEvents.filter(e => e.location?.borough?.toLowerCase() === borough.toLowerCase());
+    }
+
+    const doc = {date: today, boroughs: grouped};
+    await todayEventsCollection.deleteMany({});
+    await todayEventsCollection.insertOne(doc);
+
+    return doc;
+}
+
+async function getEventsByBorough(targetBorough) {
+    //gets current date and sees if it already exists in the database. if it does, no need to api call again.
+    //if the date is different, then make a new mongo item in that collection 4 the current date's events and save that
+    if (!targetBorough || typeof targetBorough !== 'string') {
+        throw 'targetBorough must be a valid string';
+    }
+
+    const todayEventsCollection = await todayEvent();
+    const today = new Date().toISOString().split('T')[0];
+
+    let eventList = await todayEventsCollection.findOne({ date: today });
+
+    if (!eventList) {
+        eventList = await findTodayEvents();
+    }
+
+    const match = Object.keys(eventList.boroughs).find(b => b.toLowerCase() === targetBorough.toLowerCase());
+
+    if (!match) throw 'Borough not found';
+    return eventList.boroughs[match];
+}
+
+export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, likeEvent, unlikeEvent, undislikeEvent, dislikeEvent, addReview, searchEvents, getSortedEvents, reportEvent, reviewEvent, findTodayEvents,getEventsByBorough,checkInEvent};

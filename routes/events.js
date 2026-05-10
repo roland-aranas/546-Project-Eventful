@@ -5,7 +5,6 @@ import * as eventData from '../data/events.js';
 import * as validation from '../helper.js';
 import { getSavedEventIds, attachIsSaved } from '../helper.js';
 import userData from '../data/users.js';
-import { geocodeLocation } from '../data/mapbox.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -22,10 +21,10 @@ router.get('/home', async (req, res) => {
     //     recEvents: events
     // });
 
-    if (req.session.user) {
+    //if (req.session.user) {
     try {
       const allEvents = await eventData.getAllEvents();
-      const savedIds = await getSavedEventIds(req.session.user, userData);
+      const savedIds = req.session.user ? await getSavedEventIds(req.session.user, userData) : [];
       const eventsWithSaved = attachIsSaved(allEvents, savedIds);
 
             const toEventDateTime = (event) => {
@@ -33,14 +32,16 @@ router.get('/home', async (req, res) => {
                 return new Date(`${event.startDate} ${event.startTime}`);
             };
 
-      const recEvents = eventsWithSaved.filter(e => 
-        e.location.parkNames === req.session.user.borough
-      );
+      const recEvents = req.session.user  ? eventsWithSaved.filter(e => e.location?.parkNames === req.session.user.borough): [];
 
-      const fullUser = await userData.getUserById(req.session.user._id);
+      const fullUser = req.session.user ? await userData.getUserById(req.session.user._id): null;
       const now = new Date();
-      const nextEvent = eventsWithSaved.filter(e => fullUser.savedEvents.map(id => id.toString()).includes(e._id.toString()) && toEventDateTime(e) >= now).sort((a, b) => toEventDateTime(a) - toEventDateTime(b))[0];
-
+      const nextEvent = fullUser ? eventsWithSaved
+        .filter(e => fullUser.savedEvents
+          .map(id => id.toString())
+          .includes(e._id.toString()) && new Date(e.startDate) >= now)
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0]: null;
+        
         let reviewQueue = [];
         for (let eventId of await getSavedEventIds(req.session.user, userData)) {
             const event = await eventData.getEventById(eventId);
@@ -52,20 +53,29 @@ router.get('/home', async (req, res) => {
         if (nextEvent && Array.isArray(nextEvent.checkedInList)) {
             hasCheckedIn = nextEvent.checkedInList.some((id) => id.toString() === req.session.user._id);
         }
+      
+
+        const userBorough = req.session.user?.borough;
+        const todayByBorough = userBorough ? await eventData.getEventsByBorough(userBorough): [];
+
+        const today = new Date().toISOString().split('T')[0];
 
       return res.render('home', {
         user: req.session.user,
         nextEvent,
         recEvents,
         reviewQueue,
-        hasCheckedIn
+        hasCheckedIn,
+        todayByBorough,
+        today
       });
     } catch(e) {
       return res.status(500).send(e.toString());
     }
-  } else {
-    return res.redirect('/users/login'); // redirect doesn't take second argument
-  }
+  //} else {
+    //return res.redirect('/users/login'); // redirect doesn't take second argument
+  //}
+
 });
 
 router.get('/create', async (req, res) => {

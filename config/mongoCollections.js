@@ -2,7 +2,8 @@ import {dbConnection} from './mongoConnections.js';
 
 const collectionNames = [
   'events',
-  'users'
+  'users',
+  'todayEvent'
   // 'location',
   // 'reviewList',
   // 'comments',
@@ -27,6 +28,7 @@ const getCollectionFn = (collection) => {
 /* Now, you can list your collections here: */
 export const events = getCollectionFn('events');
 export const users = getCollectionFn('users');
+export const todayEvent = getCollectionFn('todayEvent');
 // export const location = getCollectionFn('location');
 // export const reviewList = getCollectionFn('reviewList');
 // export const comments = getCollectionFn('comments');
