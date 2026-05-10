@@ -82,10 +82,13 @@ router.post('/signup', async (req, res) => {
   const { firstName, lastName, age, email, username, password, borough } = req.body;
 
   try {
+    const parsedAge = parseInt(age);
+    if (isNaN(parsedAge)) throw 'Age must be a number';
+    if (parsedAge < 13) throw 'You must be at least 13 years old to create an account';
     const newUser = await userData.createUser({
       firstName,
       lastName,
-      age: parseInt(age),
+      age: parsedAge,
       email,
       username,
       password,
