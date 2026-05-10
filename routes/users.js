@@ -15,7 +15,7 @@ router.route('/').get(async (req, res) => {
     const allUsers = await userData.getAllUsers();
     return res.json(allUsers);
   } catch (e) {
-    return res.status(500).json({error: e.message});
+    return res.status(500).render('error', {error: e.message});
   }
 });
 
