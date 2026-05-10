@@ -14,6 +14,14 @@ user (current user)
     {{/if}}
   </section>
 
+{{#if weather}}
+<section class="card weather card">
+  <h3>Today's Weather in {{selectedBorough}}</h3>
+  <p>{{weather.temperature_2m}}°F</p>
+  <p>Precipitation: {{weather.precipitation}}"</p>
+</section>
+{{/if}}
+
 {{#if user}}
   <section class="next_event card">
     <h3>Your Next Event: </h3>
@@ -42,18 +50,17 @@ user (current user)
 {{#if user}}
       <h2>Events Today in {{user.borough}}</h2>
 {{else}}
+      <h2>Events Today in: </h2>
       <form method="GET" action="/events/home">
-      <h2>Events Today in 
-        <select name="borough">
-          <option value="Manhattan">Manhattan</option>
-          <option value="Brooklyn">Brooklyn</option>
-          <option value="Queens">Queens</option>
-          <option value="Bronx">Bronx</option>
-          <option value="Staten Island">Staten Island</option>
-        </select>
-      </h2>
-      <button type="submit">Go</button>
-    </form>
+    <select name="borough">
+      <option value="Manhattan" {{#if (eq selectedBorough 'Manhattan')}}selected{{/if}}>Manhattan</option>
+      <option value="Brooklyn" {{#if (eq selectedBorough 'Brooklyn')}}selected{{/if}}>Brooklyn</option>
+      <option value="Queens" {{#if (eq selectedBorough 'Queens')}}selected{{/if}}>Queens</option>
+      <option value="Bronx" {{#if (eq selectedBorough 'Bronx')}}selected{{/if}}>Bronx</option>
+      <option value="Staten Island" {{#if (eq selectedBorough 'Staten Island')}}selected{{/if}}>Staten Island</option>
+    </select>
+    <button type="submit">Go</button>
+  </form>
 {{/if}}
     {{#if todayByBorough.length}}
       {{#each todayByBorough}}
