@@ -432,7 +432,7 @@ router.post('/:id/save', async (req, res) => {
 
   try {
     await userData.addSavedEvent(req.session.user._id, id);
-    return res.redirect(`/events/${id}`);
+    return res.redirect(`/events/search`);
   } catch (e) {
     return res.status(400).render('error', { error: e.toString() });
   }
@@ -446,7 +446,7 @@ router.post('/:id/unsave', async (req, res) => {
 
   try {
     await userData.removeSavedEvent(req.session.user._id, id);
-    return res.redirect(`/events/${id}`);
+    return res.redirect(`/events/search`);
   } catch (e) {
     return res.status(400).render('error', { error: e.toString() });
   }
