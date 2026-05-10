@@ -1,18 +1,13 @@
-<main class="wrap">
-  <header class="header">
-    <h1 class="dashboard-title">Create your account</h1>
-  </header>
-</main>
+<main class="container auth-container">
+  <section class="auth-box card">
+    <header class="header">
+      <h1 class="dashboard-title">Create your account</h1>
+    </header>
 
-<hr class="full-divider">
+    {{#if error}}
+      <p class="error">{{error}}</p>
+    {{/if}}
 
-<main class="wrap">
-
-  {{#if error}}
-    <p class="error">{{error}}</p>
-  {{/if}}
-
-  <section class="card">
     <form method="POST" action="/users/signup" class="form">
       <div class="form-control">
         <label for="firstName">First Name</label>

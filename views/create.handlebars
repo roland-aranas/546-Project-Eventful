@@ -1,14 +1,13 @@
-<main class="wrap">
- <section class="hero">
+<main class="container">
+ <section class="hero card hero-card">
     <h1>Create Event</h1>
 </section>
-
 
   {{#if error}}
     <p class="error">{{error}}</p>
   {{/if}}
 
-  <section class="card">
+  <section class="card form-card">
     <form method="POST" action="/events" class="form">
 
       <div class="form-control">
@@ -85,5 +84,4 @@
       <button type="submit">Create Event</button>
     </form>
   </section>
-
-  </main>
+</main>

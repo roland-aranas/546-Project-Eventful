@@ -367,7 +367,7 @@ router.route('/:id/undislike').post(async (req, res) => {
 
 // SAVE
 router.post('/:id/save', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user) return res.redirect('/user/login');
 
   const id = validation.checkId(req.params.id);
 
@@ -381,7 +381,7 @@ router.post('/:id/save', async (req, res) => {
 
 // UNSAVE
 router.post('/:id/unsave', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user) return res.redirect('/user/login');
 
   const id = validation.checkId(req.params.id);
 
@@ -409,7 +409,7 @@ router.patch('/:id/report', async (req, res) => {
 
 //Admin review event
 router.patch('/:id/review', async (req, res) => {
-  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user) return res.redirect('/user/login');
   if (!req.session.user.isAdmin) return res.status(403).render('error', {error: 'You do not have permission to perform this action'});
 
   const id = validation.checkId(req.params.id);
@@ -424,7 +424,7 @@ router.patch('/:id/review', async (req, res) => {
 
 //Add comment
 router.post('/:id/comment', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+    if (!req.session.user) return res.redirect('/user/login');
 
     const id = validation.checkId(req.params.id);
     const textContent = validation.checkString(req.body.commentInput, 'Comment');
@@ -450,7 +450,7 @@ router.post('/:id/comment', async (req, res) => {
 
 //Remove comment
 router.route('/:eventId/comment/:commentId').delete(async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
+    if (!req.session.user) return res.redirect('/user/login');
 
     const eventId = validation.checkId(req.params.eventId);
     const commentId = validation.checkId(req.params.commentId);

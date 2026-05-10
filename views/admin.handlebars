@@ -1,56 +1,57 @@
 
+<main class="container">
+    <section class="card hero-card">
+        <p id="successMessage">{{{successMessage}}}</p>
+        <h1>Admin Page</h1>
+        <p>Welcome to the admin page! Here you can manage users and events.</p>
+    </section>
 
-<section>
-    <p id="successMessage">{{{successMessage}}}</p>
-    <h1>Admin Page</h1>
-    <p>Welcome to the admin page! Here you can manage users and events.</p>
-</section>
-
-<section>
-    <h2>Reported Events:</h2>
-    {{#if reportedEvents.length}}
-        <ul>
-            {{#each reportedEvents}}
-                <li>
-                    <a href="/events/{{this._id}}">{{this.title}}</a> - Number of reports: {{this.totalReports}}
-                    <form action="/events/{{this._id}}" method="POST" style="display: inline;">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit">Delete</button>
-                    </form>
-
-                    <details style="margin-top: 0.5rem;">
-                        <summary>Update Event</summary>
-                        <form action="/events/{{this._id}}" method="POST" style="display: flex; flex-direction: column; margin-top: 5px; gap: 0.5rem;">
-                            <input type="hidden" name="_method" value="PATCH">
-
-                            <input name="title" type="text" value="{{this.title}}" placeholder="Title">
-                            <input name="link" type="text" value="{{this.link}}" placeholder="Link">
-                            <input name="description" type="text" value="{{this.description}}" placeholder="Description">
-                            <input name="registrationUrl" type="text" value="{{this.registrationUrl}}" placeholder="Registration URL">
-                            <input name="registrationDescription" type="text" value="{{this.registrationDescription}}" placeholder="Registration Description">
-                            <input name="startDate" type="text" value="{{this.startDate}}" placeholder="Start Date">
-                            <input type="text" name="endDate" value="{{this.endDate}}" placeholder="End Date">
-                            <input type="text" name="startTime" value="{{this.startTime}}" placeholder="Start Time">
-                            <input type="text" name="endTime" value="{{this.endTime}}" placeholder="End Time">
-                            <input type="text" name="contactPhone" value="{{this.contactPhone}}" placeholder="Contact Phone">
-                            <input type="text" name="location[parkNames]" value="{{this.location.parkNames}}" placeholder="Location park names">
-                            <input type="text" name="location[location]" value="{{this.location.location}}" placeholder="Location address">
-                            <input type="text" name="location[coordinates]" value="{{this.location.coordinates}}" placeholder="Location coordinates">
-                            <input type="text" name="image" value="{{this.image}}" placeholder="Image URL">
-                            <input type="text" name="cost" value="{{this.cost}}" placeholder="Cost">
-                            <input type="text" name="eventType" value="{{this.eventType}}" placeholder="Event Type">
-
-                            <button type="submit">Submit Updates</button>
+    <section class="card">
+        <h2>Reported Events:</h2>
+        {{#if reportedEvents.length}}
+            <ul>
+                {{#each reportedEvents}}
+                    <li>
+                        <a href="/events/{{this._id}}">{{this.title}}</a> - Number of reports: {{this.totalReports}}
+                        <form action="/events/{{this._id}}" method="POST" style="display: inline;">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit">Delete</button>
                         </form>
-                    </details>
-                    <form action="/events/{{this._id}}/review" method="POST" style="display: inline;">
-                        <input type="hidden" name="_method" value="PATCH">
-                        <button type="submit">Mark as Reviewed</button>
-                    </form>
-                </li>
-            {{/each}}
-        </ul>
-    {{else}}
-        <p>No reported events at the moment.</p>
-    {{/if}}
-</section>
+
+                        <details style="margin-top: 0.5rem;">
+                            <summary>Update Event</summary>
+                            <form action="/events/{{this._id}}" method="POST" style="display: flex; flex-direction: column; margin-top: 5px; gap: 0.5rem;">
+                                <input type="hidden" name="_method" value="PATCH">
+
+                                <input name="title" type="text" value="{{this.title}}" placeholder="Title">
+                                <input name="link" type="text" value="{{this.link}}" placeholder="Link">
+                                <input name="description" type="text" value="{{this.description}}" placeholder="Description">
+                                <input name="registrationUrl" type="text" value="{{this.registrationUrl}}" placeholder="Registration URL">
+                                <input name="registrationDescription" type="text" value="{{this.registrationDescription}}" placeholder="Registration Description">
+                                <input name="startDate" type="text" value="{{this.startDate}}" placeholder="Start Date">
+                                <input type="text" name="endDate" value="{{this.endDate}}" placeholder="End Date">
+                                <input type="text" name="startTime" value="{{this.startTime}}" placeholder="Start Time">
+                                <input type="text" name="endTime" value="{{this.endTime}}" placeholder="End Time">
+                                <input type="text" name="contactPhone" value="{{this.contactPhone}}" placeholder="Contact Phone">
+                                <input type="text" name="location[parkNames]" value="{{this.location.parkNames}}" placeholder="Location park names">
+                                <input type="text" name="location[location]" value="{{this.location.location}}" placeholder="Location address">
+                                <input type="text" name="location[coordinates]" value="{{this.location.coordinates}}" placeholder="Location coordinates">
+                                <input type="text" name="image" value="{{this.image}}" placeholder="Image URL">
+                                <input type="text" name="cost" value="{{this.cost}}" placeholder="Cost">
+                                <input type="text" name="eventType" value="{{this.eventType}}" placeholder="Event Type">
+
+                                <button type="submit">Submit Updates</button>
+                            </form>
+                        </details>
+                        <form action="/events/{{this._id}}/review" method="POST" style="display: inline;">
+                            <input type="hidden" name="_method" value="PATCH">
+                            <button type="submit">Mark as Reviewed</button>
+                        </form>
+                    </li>
+                {{/each}}
+            </ul>
+        {{else}}
+            <p>No reported events at the moment.</p>
+        {{/if}}
+    </section>
+</main>

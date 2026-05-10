@@ -7,86 +7,97 @@ createdEvents (events user has created)
 ifIsOwnProfile
 
 -->
-<section class="hero">
-    <h1>{{user.firstName}} {{user.lastName}}</h1>
-    <h3>Borough: {{user.borough}}</h3>
-</section>
 
-<section class="fav-locations">
-    {{#each user.favoriteLocations}}
-    <p>{{this}}</p>
-    {{/each}}
-</section>
+<main class="container">
+    <section class="hero card hero-card">
+        <h1>{{user.firstName}} {{user.lastName}}</h1>
+        <h3>Borough: {{user.borough}}</h3>
+    </section>
 
-<section class="planned-events">
-    <h3>Planned Events</h3>
-    {{#each upcomingEvents}}
-    <a href="/events/{{this._id}}" class="event-card">
-        <img src="{{this.image}}" alt="{{this.title}}">
-        <h3>{{this.title}}</h3>
-        <p class="description">{{this.description}}</p>
-        {{#if this.endDate}}
-        <p>{{event.startDate}} - {{event.endDate}}</p>
-        {{else}}
-        <p>{{event.startDate}}</p>
-        {{/if}}
-        {{#if isOwnProfile}}
-            <form action="/users/{{../user._id}}/savedEvents/{{this._id}}/remove" method="POST">
-                <button type="submit">Unsave</button>
-            </form>
-        {{/if}}
-      </a>
-      {{/each}}
-</section>
+    <section class="fav-locations">
+        {{#each user.favoriteLocations}}
+        <p>{{this}}</p>
+        {{/each}}
+    </section>
 
-
-<section class="past-events">
-    <h3>Past Events</h3>
-    {{#each pastEvents}}
-        <img src="{{this.image}}" alt="{{this.title}}">
-        <h3>{{this.title}}</h3>
-        <p class="description">{{this.description}}</p>
-        <button class="like-btn" data-id="{{event._id}}"></button>
-        {{#if this.hasAttended}}
-            {{#if this.hasReview}}
-                <p> Review: {{this.userReview}} </p> <!-- Find review based on current user id -> store somewher? not sure where-->
-
-            {{else}}
-                <a href="/events/{{this._id}}/review">Leave a Review!</a>
+    <section class="planned-events card">
+        <h3>Planned Events</h3>
+        {{#each upcomingEvents}}
+        <div class="events-results">
+            <a href="/events/{{this._id}}" class="event-card">
+                <img src="{{this.image}}" alt="{{this.title}}">
+                <div class="event-card-body">
+                    <h3>{{this.title}}</h3>
+                    <p class="description">{{this.description}}</p>
+                    {{#if this.endDate}}
+                        <p>{{event.startDate}} - {{event.endDate}}</p>
+                    {{else}}
+                        <p>{{event.startDate}}</p>
+                    {{/if}}
+                </div>
+            </a>
+            {{#if isOwnProfile}}
+                <form action="/users/{{../user._id}}/savedEvents/{{this._id}}/remove" method="POST">
+                    <button type="submit">Unsave</button>
+                </form>
             {{/if}}
+        </div>
         {{else}}
-        <p>Not Attended</p>
-        {{/if}}
-    {{/each}}
+            <p>No planned events yet.</p>
+        {{/each}}
+    </section>
 
 
-</section>
-
-<section class="created-events">
-    <h3>Events created by {{user.firstName}}</h3>
-    {{#each createdEvents}}
-     <a href="/events/{{this._id}}" class="event-card">
-        <img src="{{this.image}}" alt="{{this.title}}">
-        <h3>{{this.title}}</h3>
-        <p class="description">{{this.description}}</p>
-        {{#if this.endDate}}
-        <p>{{event.startDate}} - {{event.endDate}}</p>
+    <section class="past-events card">
+        <h3>Past Events</h3>
+        {{#each pastEvents}}
+            <div class="event-result">
+                <img src="{{this.image}}" alt="{{this.title}}">
+                <h3>{{this.title}}</h3>
+                <p class="description">{{this.description}}</p>
+                <button class="like-btn" data-id="{{event._id}}"></button>
+                {{#if this.hasAttended}}
+                    {{#if this.hasReview}}
+                        <p> Review: {{this.userReview}} </p> <!-- Find review based on current user id -> store somewher? not sure where-->
+                    {{else}}
+                        <a href="/events/{{this._id}}/review">Leave a Review!</a>
+                    {{/if}}
+                {{else}}
+                    <p>Not Attended</p>
+                {{/if}}
+            </div>
         {{else}}
-        <p>{{event.startDate}}</p>
-        {{/if}}
-      </a>
-    {{/each}}
+            <p>No past events yet.</p>
+        {{/each}}
+    </section>
 
+    <section class="created-events card">
+        <h3>Events created by {{user.firstName}}</h3>
+        {{#each createdEvents}}
+            <a href="/events/{{this._id}}" class="event-card">
+                <img src="{{this.image}}" alt="{{this.title}}">
+                <div class="event-card-body">
+                    <h3>{{this.title}}</h3>
+                    <p class="description">{{this.description}}</p>
+                    {{#if this.endDate}}
+                        <p>{{event.startDate}} - {{event.endDate}}</p>
+                    {{else}}
+                        <p>{{event.startDate}}</p>
+                    {{/if}}
+                </div>
+            </a>
+        {{else}}
+            <p>No created events yet.</p>
+        {{/each}}
+    </section>
 
-</section>
-
-<section class="footer">
-    <footer> 
-        {{#if isOwnProfile}}
-        <p>{{user.email}}</p>
-        <a href="/users/{{user._id}}/edit">Edit Profile</a>
-        <button>Delete Account</button>
-    {{/if}}
-    </footer>
-
-</section>
+    {{!-- <section class="footer card profile-footer">
+        <footer> 
+            {{#if isOwnProfile}}
+                <p>{{user.email}}</p>
+                <a href="/users/{{user._id}}/edit">Edit Profile</a>
+                <button>Delete Account</button>
+            {{/if}}
+        </footer>
+    </section> --}}
+</main>
