@@ -101,53 +101,53 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// TEMP - remove before production
-router.get('/test-calendar', async (req, res) => {
-  try {
-    const user = await userData.getUserByUsername('john.apple');
-    req.session.user = user;
-    res.redirect('/users/calendar');
-  } catch (e) {
-    res.status(500).send(e.toString()); // show raw error
-  }
-});
 
 //GET /users/calendar 
 router.get('/calendar', async (req, res) => {
   try {
     const currentUser = req.session.user;
-    if (!currentUser) return res.redirect('/users/login');
-
-    // fetch full user to get savedEvents
-    const fullUser = await userData.getUserById(currentUser._id);
-
-    const eventsCollection = await events();
-    const savedEventDocs = await eventsCollection
-      .find({ _id: { $in: fullUser.savedEvents } })
-      .toArray();
-
-    
+    const eventsCollection = await events(); // move outside if/else
+    let savedEventDocs = [];
     let conflictingEvents = [];
-    // Check for time conflicting events
-    for (const event of savedEventDocs) {
-      const eventStart = new Date(`${event.startDate}T${validation.convertTimeTo24Hour(event.startTime)}:00`);
-      const eventEnd = new Date(`${event.endDate}T${validation.convertTimeTo24Hour(event.endTime)}:00`);
-      for (const otherEvent of savedEventDocs) {
-        if (event._id.toString() === otherEvent._id.toString()){
-          continue;
-        }
-        const otherStart = new Date(`${otherEvent.startDate}T${validation.convertTimeTo24Hour(otherEvent.startTime)}:00`);
-        const otherEnd = new Date(`${otherEvent.endDate}T${validation.convertTimeTo24Hour(otherEvent.endTime)}:00`);
-        if (event.startDate === otherEvent.startDate) {
-          if (eventStart < otherEnd && eventEnd > otherStart) {
-            conflictingEvents.push(event);
-            break;
+    let isLoggedIn = false;
+
+    if (!currentUser) {
+      // not logged in - show all events
+      savedEventDocs = await eventsCollection.find({}).toArray();
+    } else {
+      isLoggedIn = true;
+      const fullUser = await userData.getUserById(currentUser._id);
+      savedEventDocs = await eventsCollection
+        .find({ _id: { $in: fullUser.savedEvents } })
+        .toArray();
+
+      // check for conflicts
+      for (const event of savedEventDocs) {
+        const eventStart = new Date(`${event.startDate}T${validation.convertTimeTo24Hour(event.startTime)}:00`);
+        const eventEnd = new Date(`${event.endDate}T${validation.convertTimeTo24Hour(event.endTime)}:00`);
+        
+        for (const otherEvent of savedEventDocs) {
+          if (event._id.toString() === otherEvent._id.toString()) continue;
+          
+          const otherStart = new Date(`${otherEvent.startDate}T${validation.convertTimeTo24Hour(otherEvent.startTime)}:00`);
+          const otherEnd = new Date(`${otherEvent.endDate}T${validation.convertTimeTo24Hour(otherEvent.endTime)}:00`);
+          
+          if (event.startDate === otherEvent.startDate) {
+            if (eventStart < otherEnd && eventEnd > otherStart) {
+              conflictingEvents.push(event);
+              break;
+            }
           }
         }
       }
     }
 
-    res.render('calendar', { savedEvents: savedEventDocs, conflicts: conflictingEvents});
+    res.render('calendar', { 
+      savedEvents: savedEventDocs,
+      allEvents: await eventsCollection.find({}).toArray(),
+      conflicts: conflictingEvents,
+      isLoggedIn
+    });
   } catch (e) {
     res.status(500).send(e.toString());
   }

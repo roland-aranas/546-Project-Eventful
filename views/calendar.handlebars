@@ -1,7 +1,11 @@
 <main class="container">
   <section class="card hero-card">
+    {{#if isLoggedIn}}
     <h1>My Calendar</h1>
-    <p>Saved events will appear here.</p>
+    {{else}}
+    <h1>Calendar</h1>
+    <p>All Events</p>
+    {{/if}}
   </section>
 
   <section class="card">
@@ -13,6 +17,7 @@
 
 <script>
   const savedEvents = {{{json savedEvents}}};
+  
   const conflictingEvents = {{{json conflicts}}};
   if(conflictingEvents && conflictingEvents.length > 0) {
     alert('Warning: You have events in your calendar that may have time conflicts:\n' + conflictingEvents.map(e => e.title).join('\n'));

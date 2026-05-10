@@ -19,7 +19,9 @@
         <nav class="nav-inner">
           <ul>
             <li><a href="/events/home">Home</a></li>
+            {{#if currentUser}}
             <li><a href="/users/{{currentUser._id}}">Profile</a></li>
+            {{/if}}
             <li><a href="/users/calendar">Calendar</a></li>
             <li><a href="/events/search">Search</a></li>
             <li><a href="/events/create">Create an Event</a></li>
