@@ -5,32 +5,62 @@
 
       <select name="borough">
         <option value="">All</option>
-        <option value="Manhattan">Manhattan</option>
-        <option value="Brooklyn">Brooklyn</option>
-        <option value="Staten Island">Staten Island</option>
-        <option value="Queens">Queens</option>
-        <option value="The Bronx">The Bronx</option>
+        <option value="Manhattan" {{#if (eq selectedBorough 'Manhattan')}}selected{{/if}}>Manhattan</option>
+        <option value="Brooklyn" {{#if (eq selectedBorough 'Brooklyn')}}selected{{/if}}>Brooklyn</option>
+        <option value="Staten Island" {{#if (eq selectedBorough 'Staten Island')}}selected{{/if}}>Staten Island</option>
+        <option value="Queens" {{#if (eq selectedBorough 'Queens')}}selected{{/if}}>Queens</option>
+        <option value="The Bronx" {{#if (eq selectedBorough 'The Bronx')}}selected{{/if}}>The Bronx</option>
       </select>
 
       <select name="eventType">
         <option value="">All</option>
-        <option value="Music">Art</option>
-        <option value="Sports">Sports</option>
+        <option value="Art" {{#if (eq selectedType 'Art')}}selected{{/if}}>Art</option>
+        <option value="Arts & Crafts" {{#if (eq selectedType 'Arts & Crafts')}}selected{{/if}}>Arts &amp; Crafts</option>
+        <option value="Best for Kids" {{#if (eq selectedType 'Best for Kids')}}selected{{/if}}>Best for Kids</option>
+        <option value="Birding" {{#if (eq selectedType 'Birding')}}selected{{/if}}>Birding</option>
+        <option value="Community Input Meetings" {{#if (eq selectedType 'Community Input Meetings')}}selected{{/if}}>Community Input Meetings</option>
+        <option value="Concerts" {{#if (eq selectedType 'Concerts')}}selected{{/if}}>Concerts</option>
+        <option value="Dance" {{#if (eq selectedType 'Dance')}}selected{{/if}}>Dance</option>
+        <option value="Education" {{#if (eq selectedType 'Education')}}selected{{/if}}>Education</option>
+        <option value="Festivals" {{#if (eq selectedType 'Festivals')}}selected{{/if}}>Festivals</option>
+        <option value="Film" {{#if (eq selectedType 'Film')}}selected{{/if}}>Film</option>
+        <option value="Fitness" {{#if (eq selectedType 'Fitness')}}selected{{/if}}>Fitness</option>
+        <option value="Games" {{#if (eq selectedType 'Games')}}selected{{/if}}>Games</option>
+        <option value="Hiking" {{#if (eq selectedType 'Hiking')}}selected{{/if}}>Hiking</option>
+        <option value="History" {{#if (eq selectedType 'History')}}selected{{/if}}>History</option>
+        <option value="Kayaking and Canoeing" {{#if (eq selectedType 'Kayaking and Canoeing')}}selected{{/if}}>Kayaking and Canoeing</option>
+        <option value="Nature" {{#if (eq selectedType 'Nature')}}selected{{/if}}>Nature</option>
+        <option value="Outdoor Fitness" {{#if (eq selectedType 'Outdoor Fitness')}}selected{{/if}}>Outdoor Fitness</option>
+        <option value="Recreation Center Programming" {{#if (eq selectedType 'Recreation Center Programming')}}selected{{/if}}>Recreation Center Programming</option>
+        <option value="Running/Jogging" {{#if (eq selectedType 'Running/Jogging')}}selected{{/if}}>Running/Jogging</option>
+        <option value="Shape Up NYC" {{#if (eq selectedType 'Shape Up NYC')}}selected{{/if}}>Shape Up NYC</option>
+        <option value="Skating/Blading" {{#if (eq selectedType 'Skating/Blading')}}selected{{/if}}>Skating/Blading</option>
+        <option value="Social Sports" {{#if (eq selectedType 'Social Sports')}}selected{{/if}}>Social Sports</option>
+        <option value="Talks" {{#if (eq selectedType 'Talks')}}selected{{/if}}>Talks</option>
+        <option value="Theater" {{#if (eq selectedType 'Theater')}}selected{{/if}}>Theater</option>
+        <option value="Tours" {{#if (eq selectedType 'Tours')}}selected{{/if}}>Tours</option>
+        <option value="Urban Park Rangers" {{#if (eq selectedType 'Urban Park Rangers')}}selected{{/if}}>Urban Park Rangers</option>
+        <option value="Volunteer" {{#if (eq selectedType 'Volunteer')}}selected{{/if}}>Volunteer</option>
+        <option value="Workshops" {{#if (eq selectedType 'Workshops')}}selected{{/if}}>Workshops</option>
+        <option value="Yoga & Pilates Classes" {{#if (eq selectedType 'Yoga & Pilates Classes')}}selected{{/if}}>Yoga &amp; Pilates Classes</option>
       </select>
 
       <select name="sortBy">
-        <option value="startDate">Date</option>
-        <option value="cost">Cost</option>
-        <option value="likeCount">Likes</option>
+        <option value="startDate" {{#if (eq sortBy 'startDate')}}selected{{/if}}>Date</option>
+        <option value="cost" {{#if (eq sortBy 'cost')}}selected{{/if}}>Cost</option>
+        <option value="likeCount" {{#if (eq sortBy 'likeCount')}}selected{{/if}}>Likes</option>
       </select>
 
       <select name="order">
-        <option value="asc">Asc</option>
-        <option value="desc">Desc</option>
+        <option value="asc" {{#if (eq order 'asc')}}selected{{/if}}>Asc</option>
+        <option value="desc" {{#if (eq order 'desc')}}selected{{/if}}>Desc</option>
       </select>
 
       <button type="submit">Submit</button>
     </form>
+    {{#if boroughSearch}}
+  <p class="borough-note">Due to API limits, borough search only shows events happening today.</p>
+    {{/if}}
   </section>
 
   <section class="results-section">

@@ -68,7 +68,8 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 
 app.engine("handlebars", engine({
   helpers: {
-    json: (context) => JSON.stringify(context)
+    json: (context) => JSON.stringify(context),
+    eq: (a, b) => a === b
   }
 }));
 app.set("view engine", "handlebars");

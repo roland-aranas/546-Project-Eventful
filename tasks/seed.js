@@ -38,7 +38,7 @@ const seed = async () => {
                 },
                 image: event.image ?? null,
                 cost: event.cost ?? 0,
-                eventType: null,
+                eventType: event.categories ? event.categories.split(' | ')[0].trim() : null,
                 comments: [],
                 likeCount: 0,
                 likedBy: [],

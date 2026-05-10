@@ -6,6 +6,7 @@ import * as validation from '../helper.js';
 import { getSavedEventIds, attachIsSaved } from '../helper.js';
 import userData from '../data/users.js';
 import dotenv from 'dotenv';
+import {getWeather} from '../data/mapbox.js';
 
 dotenv.config();
 
@@ -56,21 +57,29 @@ router.get('/home', async (req, res) => {
         if (nextEvent && Array.isArray(nextEvent.checkedInList)) {
             hasCheckedIn = nextEvent.checkedInList.some((id) => id.toString() === req.session.user._id);
         }
-      
 
-        const userBorough = req.session.user?.borough;
-        const todayByBorough = userBorough ? await eventData.getEventsByBorough(userBorough): [];
+        const userBorough = req.session.user?.borough || req.query.borough || 'Manhattan';
+        const todayByBorough = await eventData.getEventsByBorough(userBorough);
 
         const today = new Date().toISOString().split('T')[0];
+            
+        let weather = null;
+        try {
+            weather = await getWeather(userBorough);
+        } catch {
+            weather = null;
+        }
 
       return res.render('home', {
-        user: req.session.user,
+        user: req.session.user||null,
         nextEvent,
         recEvents,
         reviewQueue,
         hasCheckedIn,
         todayByBorough,
-        today
+        today,
+        selectedBorough: userBorough,
+        weather
       });
     } catch(e) {
       return res.status(500).send(e.toString());
@@ -90,21 +99,22 @@ router.get('/create', async (req, res) => {
 
 //GET for search route
 router.get('/search', async (req, res) => {
-    let { q, sortBy, order, borough, eventType } = req.query;
+    let { q, sortBy = 'startDate', order = 'asc', borough, eventType } = req.query;
 
     try {
         let results;
-
         if (q && q.trim()) {
             results = await eventData.searchEvents(q.trim());
-        } else {
-            results = await eventData.getSortedEvents({sortBy, order, borough, eventType});
+        } else if(borough){
+            results = await eventData.getEventsByBorough(borough);
+        }else{
+            results = await eventData.getSortedEvents({sortBy, order, eventType});
         }
 
         const savedIds = await getSavedEventIds(req.session.user, userData);
         results = attachIsSaved(results, savedIds);
 
-        return res.render('search', {user: req.session.user, results, query: q, selectedBorough: borough, selectedType: eventType, sortBy, order});
+        return res.render('search', {user: req.session.user, results, query: q, selectedBorough: borough, selectedType: eventType, sortBy, order, boroughSearch: !!borough});
 
     } catch (e) {
         res.status(500).send(e.toString());    
@@ -171,7 +181,15 @@ router.route('/:id').get(async (req, res) => {
                 canReview = true;
             }
         }
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN});
+
+        let weather = null;
+        try {
+            weather = await getWeather(event.location?.borough);
+        } catch {
+            weather = null;
+        }
+
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN, weather});
     } catch (e) {
         return res.status(404).render('error', {error: e.message || e.toString()});
     }

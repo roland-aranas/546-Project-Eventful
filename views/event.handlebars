@@ -94,6 +94,14 @@ isSaved
     {{/if}}
   </section>
 
+{{#if weather}}
+<section class="card weather card">
+  <h3>Today's weather in the area: {{selectedBorough}}</h3>
+  <p>{{weather.temperature_2m}}°F</p>
+  <p>Precipitation: {{weather.precipitation}}"</p>
+</section>
+{{/if}}
+
 <section class="map-container">
     <div id="map" style="height: 300px; width: 100%;"></div>
 

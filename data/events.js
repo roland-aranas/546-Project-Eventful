@@ -1,6 +1,7 @@
 import {ObjectId} from 'mongodb';
 import {events, users, todayEvent} from '../config/mongoCollections.js';
 import * as validation from '../helper.js';
+import { getBorough } from './mapbox.js';
 
 
 async function getAllEvents() {
@@ -619,7 +620,8 @@ async function getSortedEvents({sortBy = 'startDate', order = 'asc', borough, ev
             throw 'invalid sort type';
     }
 
-    return await eventCollection.find(filter).sort(sortQuery).toArray();
+    const finalResults = await eventCollection.find(filter).sort(sortQuery).toArray();
+    return finalResults;
 }
 
 async function checkInEvent(eventId, userId) {
@@ -652,8 +654,9 @@ async function checkInEvent(eventId, userId) {
 }
 
 async function findTodayEvents() {
-    //get all events from today and finds the boroughs via mapbox location api. separates it into 5 borough lists for the day, saved into mongo.
+    //get all events from today and finds the boroughs via mapbox location api via the built in latitude longitude identifier. separates it into 5 borough lists for the day, saved into mongo.
     //mongo collection items have {date : today date, boroughs:  {Manhattan: event1, event2}, Brooklyn: {event1}} etc
+    //note that this probably isnt 100% accurate its just wherever mapbox decided where the boundaries were
     const eventCollection = await events();
     const todayEventsCollection = await todayEvent();
     const today = new Date().toISOString().split('T')[0];
@@ -663,15 +666,17 @@ async function findTodayEvents() {
     for (const event of todaysEvents) {
         if (event.location?.borough) continue;
         try {
-            const locationString = event.location?.location || event.location?.parknames;
-            if (!locationString) continue;
+            if (!event.location?.coordinates) continue;
 
-            const borough = await getBoroughFromLocation(locationString);
+            const parts = event.location.coordinates.split(',');
+            const lat = parseFloat(parts[0]);
+            const lng = parseFloat(parts[1]);
+            const borough = await getBorough(lat, lng);
             if (borough) {
                 await eventCollection.updateOne({_id: event._id}, {$set:{'location.borough': borough}});
                 event.location.borough = borough;
             }
-        } catch {
+        } catch(e) {
             event.location.borough = null;
         }
     }
