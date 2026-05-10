@@ -321,9 +321,8 @@ async function addReview(eventId, userId, username, rating, textContent) {
 
     if (!event) throw 'Event not found';
 
-    const checkedIn = event.checkedInList?.some(
-        (id) => id.toString() === userId
-    );
+    const checkedInList = Array.isArray(event.checkedInList) ? event.checkedInList : [];
+    const checkedIn = checkedInList.some((id) => id.toString() === userId);
 
     if (!checkedIn) {
         throw 'User must check in before reviewing';
@@ -339,9 +338,7 @@ async function addReview(eventId, userId, username, rating, textContent) {
         username,
         createdAt: new Date(),
         textContent: textContent.trim(),
-        numLikes: 0,
-        rating,
-        likedBy: []
+        rating
     };
 
     await eventCollection.updateOne(
@@ -637,4 +634,33 @@ async function getSortedEvents({sortBy = 'startDate', order = 'asc', borough, ev
     return await eventCollection.find(filter).sort(sortQuery).toArray();
 }
 
-export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, likeEvent, unlikeEvent, undislikeEvent, dislikeEvent, addReview, searchEvents, getSortedEvents, reportEvent, reviewEvent};
+async function checkInEvent(eventId, userId) {
+    if (typeof eventId !== 'string' || typeof userId !== 'string') {
+        throw 'Error: eventId and userId must be strings';
+    }
+    eventId = eventId.trim();
+    userId = userId.trim();
+    if (!ObjectId.isValid(eventId)) {
+        throw 'Error: Invalid event id';
+    }
+    if (!ObjectId.isValid(userId)) {
+        throw 'Error: Invalid user id';
+    }
+
+    const eventCollection = await events();
+    const event = await eventCollection.findOne({_id: new ObjectId(eventId)});
+    if (!event) throw 'Error: Event not found';
+
+    if (event.checkedInList?.some((id) => id.toString() === userId)) {
+        throw 'Error: User already checked in to this event';
+    }
+
+    await eventCollection.updateOne(
+        { _id: new ObjectId(eventId) },
+        {
+            $push: { checkedInList: new ObjectId(userId) }
+        }
+    );
+}
+
+export {getAllEvents, getEventById, createEvent, updateEvent, deleteEvent, addComment, likeComment, likeEvent, unlikeEvent, undislikeEvent, dislikeEvent, addReview, searchEvents, getSortedEvents, reportEvent, reviewEvent, checkInEvent};

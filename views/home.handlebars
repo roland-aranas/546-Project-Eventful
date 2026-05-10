@@ -12,13 +12,20 @@ user (current user)
 
   <section class="next_event card">
     <h3>Your Next Event: </h3>
-    {{#if nextEvent.length}}
+    {{#if nextEvent}}
       <a href="/events/{{nextEvent._id}}" class="event-card">
         <img src="{{nextEvent.image}}" alt="{{nextEvent.title}}">
         <h3>{{nextEvent.title}}</h3>
         <p class="description">{{nextEvent.description}}</p>
         <p class="startTime">Starts: {{nextEvent.startTime}}</p>
         <p class="endTime">Ends: {{nextEvent.endTime}}</p>
+        {{#if hasCheckedIn}}
+          <p>You have checked in to this event.</p>
+        {{else}}
+          <form method="POST" action="/events/{{nextEvent._id}}/checkin">
+            <button type="submit">Check In</button>
+          </form>
+        {{/if}}
     </a>
     {{else}}
     <p>No Events Planned</p>
@@ -40,6 +47,28 @@ user (current user)
       {{/each}}
     {{else}}
       <p>No events near you today.</p>
+    {{/if}}
+  </section>
+  <section>
+    <h2>Review Events</h2>
+    <p>Review events you've attended to help other users find great events!</p>
+    {{#if reviewQueue.length}}
+      {{#each reviewQueue}}
+        <div class="event-card" style="width: 50%;">
+            {{#if this.image}}
+              <img src="{{this.image}}" alt="{{this.title}}">
+            {{/if}}
+            <a href="/events/{{this._id}}" >
+            <h3>{{this.title}}</h3>
+            </a>
+            <p class="description">{{this.description}}</p>
+            <p class="startTime">Starts: {{this.startTime}}</p>
+            <p class="endTime">Ends: {{this.endTime}}</p>
+            <a href="/events/{{this._id}}/reviews" class="btn" style="margin-top: 1rem; display: inline-block;">Write a Review</a>
+        </div>
+      {{/each}}
+    {{else}}
+      <p>No events to review at the moment.</p>
     {{/if}}
   </section>
 </main>

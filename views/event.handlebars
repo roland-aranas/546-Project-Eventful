@@ -125,7 +125,7 @@ isSaved
     </script>
 </section>
 
-  <section class="reactions card compact-card"></section>
+  <section class="reactions card compact-card">
     {{#if hasLiked}}
       <form method="POST" action="/events/{{event._id}}/unlike">
         <button type="submit" id="like-button" style="background-color: green; color: white;">👍 Like ({{event.likeCount}})</button>
@@ -172,6 +172,16 @@ isSaved
     {{/if}}
   </section>
 
+  <section class="checkin card">
+    {{#if hasCheckedIn}}
+      <p>✓ You have checked in to this event.</p>
+    {{else}}
+      <form method="POST" action="/events/{{event._id}}/checkin">
+        <button type="submit">Check In</button>
+      </form>
+    {{/if}}
+  </section>
+
   <section class="add-comment card">
     <form id="commentForm" method="POST" action="/events/{{event._id}}/comment">
       <textarea id="commentInput" name="commentInput" placeholder="Leave a comment..."></textarea>
@@ -182,15 +192,20 @@ isSaved
 
   <section class="reviews card">
     <h3>Reviews</h3>
-    {{#each event.reviewList}}
-      <div class="review">
-      <h3>{{this.username}}</h3>
-      <p>Rating: {{this.rating}}/5</p>
-      <p>{{this.textContent}}</p>
-      <p>{{this.createdAt}}</p>
-      </div>
+    {{#if event.reviewList.length}}
+      {{#each event.reviewList}}
+        <div class="review">
+        <h3>{{this.username}}</h3>
+        <p>Rating: {{this.rating}}/5</p>
+        <p>{{this.textContent}}</p>
+        <p>{{this.createdAt}}</p>
+        </div>
+      {{/each}}
     {{else}}
       <p>No reviews yet. Be the first!</p>
-    {{/each}}
+    {{/if}}
+    {{#if canReview}}
+      <a href="/events/{{event._id}}/reviews" class="btn" style="margin-top: 1rem; display: inline-block;">Write a Review</a>
+    {{/if}}
   </section>
 </main>

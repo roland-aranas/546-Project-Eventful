@@ -28,22 +28,37 @@ router.get('/home', async (req, res) => {
       const savedIds = await getSavedEventIds(req.session.user, userData);
       const eventsWithSaved = attachIsSaved(allEvents, savedIds);
 
+            const toEventDateTime = (event) => {
+                if (!event?.startDate || !event?.startTime) return new Date(event?.startDate);
+                return new Date(`${event.startDate} ${event.startTime}`);
+            };
+
       const recEvents = eventsWithSaved.filter(e => 
         e.location.parkNames === req.session.user.borough
       );
 
       const fullUser = await userData.getUserById(req.session.user._id);
       const now = new Date();
-      const nextEvent = eventsWithSaved
-        .filter(e => fullUser.savedEvents
-          .map(id => id.toString())
-          .includes(e._id.toString()) && new Date(e.startDate) >= now)
-        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0];
+      const nextEvent = eventsWithSaved.filter(e => fullUser.savedEvents.map(id => id.toString()).includes(e._id.toString()) && toEventDateTime(e) >= now).sort((a, b) => toEventDateTime(a) - toEventDateTime(b))[0];
+
+        let reviewQueue = [];
+        for (let eventId of await getSavedEventIds(req.session.user, userData)) {
+            const event = await eventData.getEventById(eventId);
+            if (new Date(event.endDate) < new Date() && event.reviewList?.every((r) => r.userID.toString() !== req.session.user._id) && !event.reviewed) {
+                reviewQueue.push(event);
+            }
+        }
+        let hasCheckedIn = false;
+        if (nextEvent && Array.isArray(nextEvent.checkedInList)) {
+            hasCheckedIn = nextEvent.checkedInList.some((id) => id.toString() === req.session.user._id);
+        }
 
       return res.render('home', {
         user: req.session.user,
         nextEvent,
-        recEvents
+        recEvents,
+        reviewQueue,
+        hasCheckedIn
       });
     } catch(e) {
       return res.status(500).send(e.toString());
@@ -51,7 +66,6 @@ router.get('/home', async (req, res) => {
   } else {
     return res.redirect('/users/login'); // redirect doesn't take second argument
   }
-
 });
 
 router.get('/create', async (req, res) => {
@@ -134,7 +148,17 @@ router.route('/:id').get(async (req, res) => {
         if(event.createdBy) {
             var author = await userData.getUserById(event.createdBy);
         }
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, mapboxToken: MAPBOX_TOKEN});
+        let hasCheckedIn = false;
+        if (req.session.user && Array.isArray(event.checkedInList)) {
+            hasCheckedIn = event.checkedInList.some((id) => id.toString() === req.session.user._id);
+        }
+        let canReview = false;
+        if (event.checkedInList && Array.isArray(event.checkedInList) && event.checkedInList.some((id) => id.toString() === req.session.user._id)) {
+            if (event.reviewList && Array.isArray(event.reviewList) && event.reviewList.every((r) => r.userID.toString() !== req.session.user._id) && new Date(event.endDate) < new Date()) {
+                canReview = true;
+            }
+        }
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN});
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }
@@ -460,6 +484,54 @@ router.route('/:eventId/comment/:commentId').delete(async (req, res) => {
     try {
         await eventData.removeComment(eventId, commentId, req.session.user._id);
         return res.redirect(`/events/${eventId}`);
+    } catch (e) {
+        return res.status(400).render('error', { error: e.toString() });
+    }
+});
+
+//GET review form
+router.get('/:id/reviews', async (req, res) => {
+    if (!req.session.user) return res.redirect('/users/login');
+
+    try {
+        const eventId = validation.checkId(req.params.id, 'Event ID');
+        const event = await eventData.getEventById(eventId);
+        if (!event) return res.status(404).render('error', { error: 'Event not found' });
+        
+        return res.render('review', { event });
+    } catch (e) {
+        return res.status(400).render('error', { error: e.toString() });
+    }
+});
+
+//POST review
+router.post('/:eventId/reviews', async (req, res) => {
+    if (!req.session.user) return res.redirect('/users/login');
+
+    const eventId = validation.checkId(req.params.eventId);
+    const rating = validation.checkRating(req.body.rating);
+    const textContent = validation.checkString(req.body.reviewText, 'Review text');
+
+    try {
+        await eventData.addReview(eventId, req.session.user._id, req.session.user.username, rating, textContent);
+        return res.redirect(`/events/${eventId}`);
+    } catch (e) {
+        if (req.headers.accept?.includes('application/json')) {
+            return res.status(400).json({ success: false, error: e.message || e.toString() });
+        }
+        return res.status(400).render('error', { error: e.toString() });
+    }
+});
+
+//Check in 
+router.post('/:id/checkin', async (req, res) => {
+    if (!req.session.user) return res.redirect('/users/login');
+
+    const id = validation.checkId(req.params.id);
+
+    try {
+        await eventData.checkInEvent(id, req.session.user._id);
+        return res.redirect(`/events/${id}`);
     } catch (e) {
         return res.status(400).render('error', { error: e.toString() });
     }
