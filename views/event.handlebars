@@ -10,15 +10,36 @@ isSaved
   </section>
 
   <section class="event-info card">
-    <img src="{{event.image}}" alt="{{event.title}}">
-    <h4>Type: {{event.eventType}}</h4>
-    <p>{{event.location}}</p>
+    {{#if event.image}}
+      <img src="{{event.image}}" alt="{{event.title}}">
+    {{/if}}
+    {{#if event.type}}
+      <p>Type: {{event.type}}</p>
+    {{/if}}
+    <h4>Location: </h4>
+    <p>{{event.location.parkNames}}</p>
+    <p>{{event.location.location}}</p>
+    <h4>Description:</h4>
     <p>{{event.description}}</p>
+    {{#if event.registrationUrl}}
+      <h4>Registration:</h4>
+      <p><a href="{{event.registrationUrl}}" target="_blank">{{event.registrationDescription}}</a></p>
+    {{/if}}
+    {{#if event.cost}}
+      <h4>Cost:</h4>
+      <p>{{event.cost}}</p>
+    {{/if}}
+    {{#if event.contactPhone}}
+      <h4>Contact Phone:</h4>
+      <p>{{event.contactPhone}}</p>
+    {{/if}}
+    <h4>Start/end Date:</h4>
     {{#if event.endDate}}
       <p>{{event.startDate}} - {{event.endDate}}</p>
     {{else}}
       <p>{{event.startDate}}</p>
     {{/if}}
+    <h4>Time:</h4>
     <p>{{event.startTime}} - {{event.endTime}}</p>
   </section>
 
@@ -36,8 +57,8 @@ isSaved
     </div>
   </section>
 
+  {{#if isAuthor}}
   <section class="edit-event card">
-    {{#if isAuthor}}
       <details style="margin-top: 0.5rem;">
         <summary>Update Event</summary>
         <form action="/events/{{event._id}}" method="POST" style="display: flex; flex-direction: column; margin-top: 5px; gap: 0.5rem;">
@@ -53,8 +74,7 @@ isSaved
           <input type="text" name="contactPhone" value="{{event.contactPhone}}" placeholder="Contact Phone">
           <input type="text" name="location[parkNames]" value="{{event.location.parkNames}}" placeholder="Location park names">
           <input type="text" name="location[location]" value="{{event.location.location}}" placeholder="Location address">
-          <input type="text" name="location[coordinates][lat]" value="{{event.location.coordinates.lat}}">
-        <input type="text" name="location[coordinates][lng]" value="{{event.location.coordinates.lng}}">
+          <input type="text" name="location[coordinates]" value="{{event.location.coordinates}}" placeholder="Location coordinates">
           <input type="text" name="image" value="{{event.image}}" placeholder="Image URL">
           <input type="text" name="cost" value="{{event.cost}}" placeholder="Cost">
           <input type="text" name="eventType" value="{{event.eventType}}" placeholder="Event Type">
@@ -66,7 +86,11 @@ isSaved
         <button type="submit">Delete Event</button>
       </form>
     {{else}}
-      <p class="empty-message">Only the event creator can edit this event.</p>
+      {{#if author}}
+        <p>Created by {{author.username}}</p>
+      {{else}}
+        <p></p>
+      {{/if}}
     {{/if}}
   </section>
 

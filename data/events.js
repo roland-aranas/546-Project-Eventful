@@ -66,14 +66,16 @@ async function createEvent({
     location.parkNames = location.parkNames.trim();
     location.location = location.location.trim();
 
-    location = validation.checkLocationString(location);
+    // location = validation.checkLocationString(location);
 
-    const geo = await geocodeLocation(location.location);
 
-    location.coordinates = {
-        lat: geo.lat,
-        lng: geo.lng
-    };
+// const geo = await geocodeLocation(location.location);
+    // location.coordinates = {
+    //     lat: geo.lat,
+    //     lng: geo.lng
+    // };
+
+
     
     const newEvent = {
         title,
@@ -170,33 +172,26 @@ async function updateEvent(id, updates){
                 }
 
                 if (locKey === "coordinates") {
-                    if (!updates.location.coordinates ||typeof updates.location.coordinates !== "object") {
-                        throw "Error: coordinates must be an object with lat and lng";
-                    }
-                
-                    const lat = Number(updates.location.coordinates.lat);
-                    const lng = Number(updates.location.coordinates.lng);
-                
-                    if (isNaN(lat) || isNaN(lng)) {
-                        throw "Error: coordinates must be numbers";
+                    if (!updates.location.coordinates) {
+                        throw "Error: coordinates must be a string with lat and lng";
                     }
                 
                     update_data.location = update_data.location || {};
-                    update_data.location.coordinates = {lat,lng };
+                    update_data.location.coordinates = updates.location.coordinates;
                 }
             }
 
-            for(let key of Object.keys(updates)){
-                if(updates[key] === existing_event[key]) {
-                    delete updates[key];
-                }
-                if(key === 'location') {
-                    for(let locKey of Object.keys(updates.location)) {
-                        if(updates.location[locKey] == existing_event.location[locKey]) {
-                            delete updates[`location.${locKey}`];
-                        }
-                    }
-                }
+            if(updates.location.parkNames) {
+                update_data.location = update_data.location || {};
+                update_data.location.parkNames = validation.checkString(updates.location.parkNames, 'Park Names').trim();
+            }
+            if(updates.location.location) {
+                update_data.location = update_data.location || {};
+                update_data.location.location = validation.checkString(updates.location.location, 'Location').trim();
+            }
+            if(updates.location.borough) {
+                update_data.location = update_data.location || {};
+                update_data.location.borough = validation.checkOptionalString(updates.location.borough, 'Borough').trim();
             }
 
         } else if (key === 'cost') {

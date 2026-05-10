@@ -72,7 +72,8 @@ export const checkLocationString = (location) => {
   return {
     parkNames: location.parkNames.trim(),
     location: location.location.trim(),
-    borough: location.borough ? location.borough.trim() : null
+    borough: location.borough ? location.borough.trim() : null,
+    coordinates: location.coordinates
   };
 };
 

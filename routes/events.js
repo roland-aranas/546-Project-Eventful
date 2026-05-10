@@ -131,8 +131,10 @@ router.route('/:id').get(async (req, res) => {
         if (req.session.user && event.createdBy) {
             isAuthor = event.createdBy.toString() === req.session.user._id;
         }
-
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, mapboxToken: MAPBOX_TOKEN});
+        if(event.createdBy) {
+            var author = await userData.getUserById(event.createdBy);
+        }
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, mapboxToken: MAPBOX_TOKEN});
     } catch (e) {
         return res.status(404).json({error: e || e.toString()});
     }

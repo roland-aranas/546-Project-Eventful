@@ -39,7 +39,9 @@
       {{#each results}}
         <div class="event-result">
           <a href="/events/{{this._id}}" class="event-card">
-            <img src="{{this.image}}" alt="{{this.title}}">
+            {{#if this.image}}
+              <img src="{{this.image}}" alt="{{this.title}}">
+            {{/if}}
             <div class="event-card-body">
               <h3>{{this.title}}</h3>
               <p class="description">{{this.description}}</p>
