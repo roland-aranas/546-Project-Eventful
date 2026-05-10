@@ -64,12 +64,6 @@ body {
   margin: 1.5rem auto;
 }
 
-/* .container, main {
-  width: 92%;
-  max-width: 1100px;
-  margin: 1.5rem auto;
-} */
-
 .card {
   background-color: white;
   border: 1px solid #ddd6c8;
@@ -129,6 +123,37 @@ h1, h2, h3, h4 {
 .event-meta {
   color: #666;
   font-size: 0.95rem;
+}
+
+.past-event-wrapper {
+  margin-bottom: 1rem;
+}
+
+.past-event-card {
+  margin-bottom: 0.75rem;
+}
+
+.past-event-card:hover {
+  transform: translateY(-2px);
+  transition: 0.15s ease;
+}
+
+.past-event-card img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+.review-link {
+  display: inline-block;
+  background-color: #244d2f;
+  color: white;
+  text-decoration: none;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-weight: bold;
 }
 
 .search-form {

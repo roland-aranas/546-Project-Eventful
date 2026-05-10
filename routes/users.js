@@ -200,7 +200,20 @@ router.get('/:id', async (req, res) => {
     const now = new Date();
 
     const upcomingEvents = savedEventDocs.filter(e => new Date(e.startDate) >= now);
-    const pastEvents = savedEventDocs.filter(e => new Date(e.startDate) < now);
+    const pastEvents = savedEventDocs.filter(e => new Date(e.startDate) < now).map((event) => {
+      const userId = id;
+      const hasAttended = event.checkedInList &&
+        event.checkedInList.some((checkedId) => checkedId.toString() === userId);
+      const userReview = event.reviewList &&
+        event.reviewList.find((review) => review.userID.toString() === userId);
+
+      return {
+        ...event,
+        hasAttended: hasAttended,
+        hasReview: !!userReview,
+        userReview: userReview ? userReview.textContent : null
+      };
+    });
 
     return res.render('profile', {
       user: user,

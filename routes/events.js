@@ -14,14 +14,7 @@ const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN;
 const router = Router();
 
 router.get('/home', async (req, res) => {
-    // const events = await eventData.getAllEvents();
-
-    // return res.render('home', {
-    //     user: req.session.user,
-    //     recEvents: events
-    // });
-
-    //if (req.session.user) {
+    
     try {
       const allEvents = await eventData.getAllEvents();
       const savedIds = req.session.user ? await getSavedEventIds(req.session.user, userData) : [];
@@ -43,10 +36,20 @@ router.get('/home', async (req, res) => {
         .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0]: null;
         
         let reviewQueue = [];
-        for (let eventId of await getSavedEventIds(req.session.user, userData)) {
-            const event = await eventData.getEventById(eventId);
-            if (new Date(event.endDate) < new Date() && event.reviewList?.every((r) => r.userID.toString() !== req.session.user._id) && !event.reviewed) {
-                reviewQueue.push(event);
+        if (req.session.user) {
+            let savedEventIds = await getSavedEventIds(req.session.user, userData);
+            for (let eventId of savedEventIds) {
+                const event = await eventData.getEventById(eventId);
+                const isPastEvent = new Date(event.endDate) < new Date();
+                const hasCheckedIn = event.checkedInList?.some((id) => {
+                    return id.toString() === req.session.user._id.toString();
+                });
+                const hasReviewed = event.reviewList?.some((review) => {
+                    return review.userID.toString() === req.session.user._id.toString();
+                });
+                if (isPastEvent && hasCheckedIn && !hasReviewed) {
+                    reviewQueue.push(event);
+                }
             }
         }
         let hasCheckedIn = false;
@@ -503,14 +506,18 @@ router.route('/:eventId/comment/:commentId').delete(async (req, res) => {
 router.get('/:id/reviews', async (req, res) => {
     if (!req.session.user) return res.redirect('/users/login');
 
+    let id;
     try {
-        const eventId = validation.checkId(req.params.id, 'Event ID');
-        const event = await eventData.getEventById(eventId);
-        if (!event) return res.status(404).render('error', { error: 'Event not found' });
-        
-        return res.render('review', { event });
+        id = validation.checkId(req.params.id, 'Event ID');
     } catch (e) {
-        return res.status(400).render('error', { error: e.toString() });
+        return res.status(400).render('error', {error: e.message || e.toString()});
+    }
+
+    try {
+        const event = await eventData.getEventById(id);
+        return res.render('review', {event: event});
+    } catch (e) {
+        return res.status(404).render('error', {error: e.message || e.toString()});
     }
 });
 
@@ -518,18 +525,28 @@ router.get('/:id/reviews', async (req, res) => {
 router.post('/:eventId/reviews', async (req, res) => {
     if (!req.session.user) return res.redirect('/users/login');
 
-    const eventId = validation.checkId(req.params.eventId);
-    const rating = validation.checkRating(req.body.rating);
-    const textContent = validation.checkString(req.body.reviewText, 'Review text');
+     let id;
+    try {
+        id = validation.checkId(req.params.id, 'Event ID');
+    } catch (e) {
+        return res.status(400).render('error', {error: e.message || e.toString()});
+    }
 
     try {
-        await eventData.addReview(eventId, req.session.user._id, req.session.user.username, rating, textContent);
-        return res.redirect(`/events/${eventId}`);
+        const rating = parseInt(req.body.rating);
+        const reviewText = validation.checkString(req.body.reviewText, 'Review');
+
+        await eventData.addReview(
+            id,
+            req.session.user._id,
+            req.session.user.username,
+            rating,
+            reviewText
+        );
+
+        return res.redirect(`/events/${id}`);
     } catch (e) {
-        if (req.headers.accept?.includes('application/json')) {
-            return res.status(400).json({ success: false, error: e.message || e.toString() });
-        }
-        return res.status(400).render('error', { error: e.toString() });
+        return res.status(400).render('error', {error: e.message || e.toString()});
     }
 });
 

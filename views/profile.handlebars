@@ -50,20 +50,30 @@ ifIsOwnProfile
 
     <section class="past-events card">
         <h3>Past Events</h3>
+
         {{#each pastEvents}}
-            <div class="event-result">
-                <img src="{{this.image}}" alt="{{this.title}}">
-                <h3>{{this.title}}</h3>
-                <p class="description">{{this.description}}</p>
-                <button class="like-btn" data-id="{{event._id}}"></button>
+            <div class="past-event-wrapper">
+                <a href="/events/{{this._id}}" class="event-card past-event-card">
+                    <img src="{{this.image}}" alt="{{this.title}}">
+
+                    <div class="event-card-body">
+                        <h3>{{this.title}}</h3>
+                        <p class="description">{{this.description}}</p>
+
+                        {{#if this.hasReview}}
+                            <p><strong>Your Review:</strong> {{this.userReview}}</p>
+                        {{else if this.hasAttended}}
+                            <p class="muted-text">You attended this event.</p>
+                        {{else}}
+                            <p class="muted-text">Not attended</p>
+                        {{/if}}
+                    </div>
+                </a>
+
                 {{#if this.hasAttended}}
-                    {{#if this.hasReview}}
-                        <p> Review: {{this.userReview}} </p> <!-- Find review based on current user id -> store somewher? not sure where-->
-                    {{else}}
-                        <a href="/events/{{this._id}}/review">Leave a Review!</a>
-                    {{/if}}
-                {{else}}
-                    <p>Not Attended</p>
+                    {{#unless this.hasReview}}
+                        <a class="review-link" href="/events/{{this._id}}/review">Leave a Review</a>
+                    {{/unless}}
                 {{/if}}
             </div>
         {{else}}
