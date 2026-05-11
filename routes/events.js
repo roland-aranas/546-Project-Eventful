@@ -197,9 +197,18 @@ router.route('/:id').get(async (req, res) => {
             }
         } catch {
             currentLocation = null;
-}
+        }
 
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN, weather, currentLocation});
+        let checkInAllowed = false;
+        if (event.startDate && event.endDate && event.startTime && event.endTime) {
+            const eventStart = new Date(`${event.startDate}T${validation.convertTimeTo24Hour(event.startTime)}:00`);
+            const eventEnd = new Date(`${event.endDate}T${validation.convertTimeTo24Hour(event.endTime)}:00`);
+            const current = new Date();
+
+            checkInAllowed = current >= eventStart && current <= eventEnd;
+        }
+
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN, weather, currentLocation, checkInAllowed});
     } catch (e) {
         return res.status(404).render('error', {error: e.message || e.toString()});
     }
