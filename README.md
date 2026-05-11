@@ -1,6 +1,9 @@
 # 546-Project-ParkParty
 546 Web Programming project
 
+ParkParty is a web application that helps users discover public events happening in NYC parks. Users can browse events by borough, save events to a personal calendar, check into events, leave reviews, interact with other users through comments and reactions, and create their own community events.
+
+
 ## Members
 
 * Roland Aranas
@@ -8,7 +11,52 @@
 * Kyle Michael Pingue
 * Anna Tolmanov 
 
-## Set up
+
+## Features
+
+### User Features
+- Create an account and log in securely
+- Password strength validation
+- Browse public NYC park events
+- Search and filter events by borough
+- Save and unsave events to a personal calendar
+- Check into attended events
+- Leave reviews for attended events
+- Like/dislike events
+- Comment on events
+- Report inappropriate events
+- View upcoming, past, and created events on profile page
+
+### Event Features
+- Create custom community events
+- Edit/delete events created by the logged-in user
+- View event details including:
+  - Description
+  - Time/date
+  - Location
+  - Registration links
+  - Cost
+  - Weather
+  - Interactive map
+
+### Additional Features
+- Interactive Mapbox maps
+- Weather integration using Open-Meteo
+  
+
+## Technologies Used
+
+### APIs
+- Mapbox  
+  Used to display interactive map with location of each event  
+  https://www.mapbox.com/
+
+- Open-Meteo  
+  Used to display live weather based on where user has set their location and where event is:
+  https://open-meteo.com/
+
+
+## Setup Instructions
 
 1. Download the project or clone the repository and run `npm install` to install all dependencies. 
 2. Run `npm run seed` to populate database with events and users
