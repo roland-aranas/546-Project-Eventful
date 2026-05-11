@@ -52,7 +52,7 @@ ParkParty is a web application that helps users discover public events happening
   https://www.mapbox.com/
 
 - Open-Meteo  
-  Used to display live weather based on where user has set their location and where event is:
+  Used to display live weather based on where user has set their location and where event is
   https://open-meteo.com/
 
 
