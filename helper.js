@@ -219,3 +219,9 @@ export const checkPassword = (str) => {
   }
   return str;
 };
+
+export const checkCoords = (lat, lng) => {
+  if (isNaN(lat)|| isNaN(lng)|| lat < 40|| lat > 42|| lng < -75|| lng > -72) {
+    throw "Invalid coordinates";
+  }
+}
