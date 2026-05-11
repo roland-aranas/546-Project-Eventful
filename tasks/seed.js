@@ -154,6 +154,105 @@ const seed = async () => {
 
         cleanedEvents.push(reportedEvents);
 
+        reportedEvents = {
+            title: 'Central Park Concert',
+            link: 'https://www.centralparkconcert.com',
+            description: 'Enjoy a night of live music at Central Park! Featuring popular bands and artists from around the world.',
+            registrationUrl: null,
+            registrationDescription: null,
+            startDate: '2026-05-25',
+            endDate: '2026-05-25',
+            startTime: '6:00 PM',
+            endTime: '11:00 PM',
+            contactPhone: '555-111-2222',
+            location: {
+                parkNames: 'Central Park',
+                location: 'Central Park, Manhattan, NY',
+                coordinates: "40.781401, -73.966613"
+            },
+            image: null,
+            cost: 25,
+            eventType: 'Music',
+            comments: [{_id: new ObjectId(), userId: new ObjectId(), comment: 'Amazing concert!'}, {_id: new ObjectId(), userId: new ObjectId(), comment: 'Great atmosphere and sound quality!'}],
+            likeCount: 55,
+            likedBy: [new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()],
+            dislikeCount: 2,
+            dislikedBy: [new ObjectId(), new ObjectId()],
+            reviewList: [{_id: new ObjectId(), userId: new ObjectId(), username: 'John Doe', rating: 5, textContent: 'Incredible concert with so much talent!'}, {_id: new ObjectId(), userId: new ObjectId(), username: 'Jane Smith', rating: 4, textContent: 'Great concert but a bit crowded.'}],
+            checkedInList: [],
+            registeredList: [],
+            totalReports: 3,
+            reportedBy: [new ObjectId(), new ObjectId(), new ObjectId()]
+        }
+
+        cleanedEvents.push(reportedEvents);
+
+        reportedEvents = {
+            title: 'Queens Food Festival',
+            link: 'https://www.queensfoodfestival.com',
+            description: 'Taste the best food Queens has to offer at our annual food festival! Featuring local restaurants, food trucks, and live cooking demonstrations.',
+            registrationUrl: null,
+            registrationDescription: null,
+            startDate: '2026-05-25',
+            endDate: '2026-05-25',
+            startTime: '12:00 PM',
+            endTime: '8:00 PM',
+            contactPhone: '555-333-4444',
+            location: {
+                parkNames: 'Flushing Meadows Corona Park',
+                location: 'Flushing Meadows Corona Park, Queens, NY',
+                coordinates: "40.749824, -73.844849"
+            },
+            image: null,
+            cost: 10,
+            eventType: 'Food',
+            comments: [{_id: new ObjectId(), userId: new ObjectId(), comment: 'Delicious food and great variety!'}, {_id: new ObjectId(), userId: new ObjectId(), comment: 'Had a fantastic time trying new dishes!'}],
+            likeCount: 30,
+            likedBy: [new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()],
+            dislikeCount: 5,
+            dislikedBy: [new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()],
+            reviewList: [{_id: new ObjectId(), userId: new ObjectId(), username: 'John Doe', rating: 5, textContent: 'Incredible food festival with so much variety!'}, {_id: new ObjectId(), userId: new ObjectId(), username: 'Jane Smith', rating: 4, textContent: 'Great food but a bit crowded.'}],
+            checkedInList: [],
+            registeredList: [],
+            totalReports: 4,
+            reportedBy: [new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()]
+        }
+
+        cleanedEvents.push(reportedEvents);
+
+        reportedEvents = {
+            title: 'Staten Island Movie Night',
+            link: 'https://www.statenislandmovienight.com',
+            description: 'Enjoy a movie under the stars at Staten Island Movie Night! Featuring popular films and family-friendly entertainment.',
+            registrationUrl: null,
+            registrationDescription: null,
+            startDate: '2026-05-25',
+            endDate: '2026-05-25',
+            startTime: '8:00 PM',
+            endTime: '11:00 PM',
+            contactPhone: '555-555-6666',
+            location: {
+                parkNames: 'Staten Island Greenbelt',
+                location: 'Staten Island Greenbelt, Staten Island, NY',
+                coordinates: "40.588044, -74.138984"
+            },
+            image: null,
+            cost: 0,
+            eventType: 'Entertainment',
+            comments: [{_id: new ObjectId(), userId: new ObjectId(), comment: 'Great movie night!'},    {_id: new ObjectId(), userId: new ObjectId(), comment: 'Loved watching the movie outdoors!'}],
+            likeCount: 20,
+            likedBy: [new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId(), new ObjectId()],
+            dislikeCount: 3,
+            dislikedBy: [new ObjectId(), new ObjectId(), new ObjectId()],
+            reviewList: [{_id: new ObjectId(), userId: new ObjectId(), username: 'John Doe', rating: 5, textContent: 'Incredible movie night with a great selection!'}, {_id: new ObjectId(), userId: new ObjectId(), username: 'Jane Smith', rating: 4, textContent: 'Great event but a bit crowded.'}],
+            checkedInList: [],
+            registeredList: [],
+            totalReports: 2,
+            reportedBy: [new ObjectId(), new ObjectId()]
+        }
+
+        cleanedEvents.push(reportedEvents);
+
         console.log('Inserting cleaned events...');
         const insertInfo = await eventCollection.insertMany(cleanedEvents);
 
@@ -199,7 +298,7 @@ const seed = async () => {
         const usersData = [
             {
                 _id: new ObjectId(),
-                isAdmin: false,
+                isAdmin: true,
                 firstName: 'John',
                 lastName: 'Apple',
                 age: 30,
