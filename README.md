@@ -58,6 +58,56 @@ ParkParty is a web application that helps users discover public events happening
 
 ## Setup Instructions
 
+### 1. Clone the Repository
+
+```bash
+git clone <repo-url>
+cd 546-Project-ParkParty
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Create Environment File
+
+Create a `.env` file in the root directory:
+
+```env
+MAPBOX_TOKEN=YOUR_MAPBOX_TOKEN
+```
+
+To obtain a Mapbox token:
+1. Create an account at https://www.mapbox.com/
+2. Navigate to:
+   - Account → Tokens
+3. Copy your default public token
+
+---
+
+## Running the Application
+
+### Seed the Database
+
+```bash
+npm run seed
+```
+
+### Start the Server
+
+```bash
+npm start
+```
+
+Then open:
+
+```txt
+http://localhost:3000
+```
+
+
 1. Download the project or clone the repository and run `npm install` to install all dependencies. 
 2. Run `npm run seed` to populate database with events and users
 3. Create a `.env` file with the following:
@@ -67,7 +117,7 @@ Grab API_KEY_1 from https://www.mapbox.com/ by signing up for an account. Replac
 
 5. Run `npm run start` to start localhost and navigate to http://localhost:3000 (or default localhost)
 
-## Credentials
+## Demo Credentials
 
 You can log in as an admin with the following credentials:
 
@@ -79,7 +129,8 @@ Alternatively, you can create a new account or log in as a normal user with the 
 * Username: bob.smith
 * Password: password789!
 
-## Technologies Used
 
-- Mapbox used to display an interactive map with location of each event: https://www.mapbox.com/
-- Meteo used to display live weather based on where user has set their location and where event is: https://open-meteo.com/
+## Dataset
+
+NYC Parks Public Events Dataset:
+https://opendata.cityofnewyork.us/
