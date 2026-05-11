@@ -493,12 +493,17 @@ router.patch('/:id/review', async (req, res) => {
 
 //Add comment
 router.post('/:id/comment', async (req, res) => {
-    if (!req.session.user) return res.redirect('/users/login');
+    if (!req.session.user) {
+        if (req.headers.accept?.includes('application/json')) {
+            return res.status(401).json({ success: false, error: 'You must be logged in to post a comment' });
+        }
+        return res.redirect('/users/login');
+    }
+
+    const id = validation.checkId(req.params.id);
+    const textContent = validation.checkString(req.body.commentInput, 'Comment');
 
     try {
-        const id = validation.checkId(req.params.id);
-        const textContent = validation.checkString(req.body.commentInput, 'Comment');
-
         const newComment = await eventData.addComment(id, req.session.user._id, textContent);
         let username = null;
         try {
@@ -508,10 +513,14 @@ router.post('/:id/comment', async (req, res) => {
             username = req.session.user.username || null;
         }
 
+        if (req.headers.accept?.includes('application/json')) {
+            return res.json({ success: true, comment: { _id: newComment._id, userID: req.session.user._id, username, textContent: newComment.textContent || textContent } });
+        }
+
         return res.redirect(`/events/${id}`);
     } catch (e) {
         if (req.headers.accept?.includes('application/json')) {
-            return res.status(400).render('error', { error: e.message || e.toString() });
+            return res.status(400).json({ success: false, error: e.message || e.toString() });
         }
         return res.status(400).render('error', { error: e.toString() });
     }
