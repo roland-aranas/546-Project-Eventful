@@ -485,7 +485,7 @@ router.patch('/:id/review', async (req, res) => {
   
   try {
     await eventData.reviewEvent(id);
-    return res.render('admin', {successMessage: 'Event marked as reviewed'});
+    return res.redirect(`/users/admin`);
   } catch (e) {
     return res.status(400).render('error', { error: e.toString() });
   }
