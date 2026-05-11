@@ -156,6 +156,32 @@ h1, h2, h3, h4 {
   font-weight: bold;
 }
 
+.review-event-card {
+  background-color: white;
+  border: 1px solid #ddd6c8;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: 0.15s ease;
+}
+
+.review-event-card:hover {
+  transform: translateY(-2px);
+}
+
+.review-event-card img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+}
+
+.review-event-title {
+  color: inherit;
+}
+
 .search-form {
   display: grid;
   grid-template-columns: 2fr repeat(4, 1fr) auto;
