@@ -547,7 +547,7 @@ router.post('/:eventId/reviews', async (req, res) => {
 
      let id;
     try {
-        id = validation.checkId(req.params.id, 'Event ID');
+        id = validation.checkId(req.params.eventId, 'Event ID');
     } catch (e) {
         return res.status(400).render('error', {error: e.message || e.toString()});
     }
