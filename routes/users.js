@@ -15,7 +15,7 @@ router.route('/').get(async (req, res) => {
     const allUsers = await userData.getAllUsers();
     return res.json(allUsers);
   } catch (e) {
-    return res.status(500).render('error', {error: e.message});
+    return res.status(500).json({error: e.message});
   }
 });
 
@@ -79,13 +79,12 @@ router.post('/signup', async (req, res) => {
     return res.status(400).render('signup', {error: 'Invalid request body'});
   }
 
-  let { firstName, lastName, age, email, username, password, borough } = req.body;
+  const { firstName, lastName, age, email, username, password, borough } = req.body;
 
   try {
     const parsedAge = parseInt(age);
     if (isNaN(parsedAge)) throw 'Age must be a number';
     if (parsedAge < 13) throw 'You must be at least 13 years old to create an account';
-    password = validation.checkPassword(password);
     const newUser = await userData.createUser({
       firstName,
       lastName,
@@ -114,7 +113,10 @@ router.get('/calendar', async (req, res) => {
 
     if (!currentUser) {
       // not logged in - show all events
-      savedEventDocs = await eventsCollection.find({}).toArray();
+      savedEventDocs = await eventsCollection.find({
+        title: { $not: { $regex: 'cancel', $options: 'i' } },
+        description: { $not: { $regex: 'cancel', $options: 'i' } }
+    }).toArray();
     } else {
       isLoggedIn = true;
       const fullUser = await userData.getUserById(currentUser._id);
@@ -201,20 +203,7 @@ router.get('/:id', async (req, res) => {
     const now = new Date();
 
     const upcomingEvents = savedEventDocs.filter(e => new Date(e.startDate) >= now);
-    const pastEvents = savedEventDocs.filter(e => new Date(e.startDate) < now).map((event) => {
-      const userId = id;
-      const hasAttended = event.checkedInList &&
-        event.checkedInList.some((checkedId) => checkedId.toString() === userId);
-      const userReview = event.reviewList &&
-        event.reviewList.find((review) => review.userID.toString() === userId);
-
-      return {
-        ...event,
-        hasAttended: hasAttended,
-        hasReview: !!userReview,
-        userReview: userReview ? userReview.textContent : null
-      };
-    });
+    const pastEvents = savedEventDocs.filter(e => new Date(e.startDate) < now);
 
     return res.render('profile', {
       user: user,

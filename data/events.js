@@ -6,7 +6,10 @@ import { getBorough } from './mapbox.js';
 
 async function getAllEvents() {
     const eventCollection = await events();
-    return await eventCollection.find({}).toArray();
+    return await eventCollection.find({
+        title: { $not: { $regex: 'cancel', $options: 'i' } },
+        description: { $not: { $regex: 'cancel', $options: 'i' } }
+     }).toArray();
 }
 
 async function getEventById(id) {
@@ -568,16 +571,19 @@ async function searchEvents(keyword) {
     const eventCollection = await events();
 
     const filtered = {
-        $or: 
-        [
-            { title: { $regex: keyword, $options: 'i' } },
-            { description: { $regex: keyword, $options: 'i' } },
-            { eventType: { $regex: keyword, $options: 'i' } },
-            { hostedBy: { $regex: keyword, $options: 'i' } },
-            { 'location.location': { $regex: keyword, $options: 'i' } },
-            { 'location.parkNames': { $regex: keyword, $options: 'i' } },
-        ]
-    };
+    $and: [
+        {
+            $or: [
+                { title: { $regex: keyword, $options: 'i' } },
+                { description: { $regex: keyword, $options: 'i' } },
+                // ...rest of your search fields
+            ]
+        },
+        // exclude cancelled events
+        { title: { $not: { $regex: 'cancel', $options: 'i' } } },
+        { description: { $not: { $regex: 'cancel', $options: 'i' } } }
+    ]
+};
 
     const results = await eventCollection.find(filtered).toArray();
     return results;
@@ -588,7 +594,10 @@ async function getSortedEvents({sortBy = 'startDate', order = 'asc', borough, ev
     const sortOrder = order === 'desc' ? -1 : 1;
     const eventCollection = await events();
 
-    let filter = {};
+    let filter = {
+        title: { $not: { $regex: 'cancel', $options: 'i' } },
+        description: { $not: { $regex: 'cancel', $options: 'i' } }
+    };
 
     if (borough) {
         filter['location.location'] = { $regex: borough, $options: 'i' };

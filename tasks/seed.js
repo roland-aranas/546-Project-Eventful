@@ -4,6 +4,7 @@ import {getApiData} from '../getData.js';
 import {events, users} from '../config/mongoCollections.js';
 import {ObjectId} from 'mongodb';
 import bcrypt from 'bcrypt';
+import he from 'he'; // for decoding special characters!
 
 const seed = async () => {
     try {
@@ -21,9 +22,9 @@ const seed = async () => {
 
         for (const event of data) {
             let newEvent = {
-                title: event.title,
+                title: he.decode(event.title),
                 link: event.link,
-                description: event.description,
+                description: he.decode(event.description),
                 registrationUrl: event.registration_url ?? null,
                 registrationDescription: event.registration_description ?? null,
                 startDate: event.startdate,
