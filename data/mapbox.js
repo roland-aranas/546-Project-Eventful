@@ -39,6 +39,7 @@ const boroughCenter = {
     'Staten Island': { lat: 40.5795, lng: -74.1502 }
 };
 
+//get weather is by openmeteo. no api key required
 export async function getWeather(borough) {
     if (!borough || typeof borough !== 'string') {
         throw 'Invalid borough';
