@@ -191,7 +191,7 @@ isSaved
   </section>
 
   <section class="add-comment card">
-    <form id="commentForm" method="POST" action="/events/{{event._id}}/comment">
+    <form id="comment-form" method="POST" action="/events/{{event._id}}/comment">
       <textarea id="commentInput" name="commentInput" placeholder="Leave a comment..."></textarea>
       <div id="commentError" class="comment-error" aria-live="polite" style="color: red; margin-top: 0.5rem;"></div>
       <button type="submit" class="submit-comment">Post Comment</button>

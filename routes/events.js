@@ -485,10 +485,10 @@ router.patch('/:id/review', async (req, res) => {
 router.post('/:id/comment', async (req, res) => {
     if (!req.session.user) return res.redirect('/users/login');
 
-    const id = validation.checkId(req.params.id);
-    const textContent = validation.checkString(req.body.commentInput, 'Comment');
-
     try {
+        const id = validation.checkId(req.params.id);
+        const textContent = validation.checkString(req.body.commentInput, 'Comment');
+
         const newComment = await eventData.addComment(id, req.session.user._id, textContent);
         let username = null;
         try {

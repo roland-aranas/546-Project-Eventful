@@ -309,3 +309,115 @@ function validateUsername(username) {
 
     return username;
 }
+
+function validatePassword(password) {
+    if (!password || typeof password !== 'string') {
+        throw 'Password must be supplied';
+    }
+    if (password.trim().length === 0) {
+        throw 'Password cannot be empty';
+    }
+    if (/\s/.test(password)) {
+        throw 'Password cannot contain spaces';
+    }
+    if (!/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/.test(password)) {
+        throw 'Password must be at least 8 characters and contain an uppercase letter, a number, and a special character';
+    }
+    return password;
+}
+
+(function () {
+    function showClientError(form, message) {
+        let oldError = form.querySelector('.client-error');
+        if (oldError) {
+            oldError.remove();
+        }
+        let error = document.createElement('p');
+        error.className = 'client-error error';
+        error.textContent = message;
+        form.prepend(error);
+    }
+
+    // SIGNUP
+    let signupForm = document.getElementById('signup-form');
+    if (signupForm) {
+        signupForm.addEventListener('submit', (event) => {
+            try {
+                let firstName = validateUsername(document.getElementById('firstName').value);
+                let lastName = validateUsername(document.getElementById('lastName').value);
+                let email = validateEmail(document.getElementById('email').value);
+                let username = validateUsername(document.getElementById('username').value);
+                let age = Number(document.getElementById('age').value);
+                let password = validatePassword(document.getElementById('password').value);
+                let borough = document.getElementById('borough').value;
+
+                if (isNaN(age) || age < 13) {
+                    throw 'You must be at least 13 years old to create an account';
+                }
+                if (!borough || borough.trim().length === 0) {
+                    throw 'You must select a borough';
+                }
+            } catch (e) {
+                event.preventDefault();
+                showClientError(signupForm, e);
+            }
+        });
+    }
+
+    // LOGIN
+    let loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', (event) => {
+            try {
+                validateUsername(document.getElementById('username').value);
+                let password = document.getElementById('password').value;
+                if (!password || password.trim().length === 0) {
+                    throw 'Password cannot be empty';
+                }
+            } catch (e) {
+                event.preventDefault();
+                showClientError(loginForm, e);
+            }
+        });
+    }
+
+    // REVIEW
+    let reviewForm = document.getElementById('review-form');
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', (event) => {
+            try {
+                let rating = Number(document.getElementById('rating').value);
+                let textContent = document.getElementById('textContent').value;
+                if (isNaN(rating) || rating < 1 || rating > 5) {
+                    throw 'Rating must be between 1 and 5';
+                }
+                if (!textContent || textContent.trim().length === 0) {
+                    throw 'Review cannot be empty';
+                }
+            } catch (e) {
+                event.preventDefault();
+                showClientError(reviewForm, e);
+            }
+        });
+    }
+
+    // COMMENT
+    let commentForm = document.getElementById('comment-form');
+    if (commentForm) {
+        commentForm.addEventListener('submit', (event) => {
+            let commentInput = document.getElementById('commentInput');
+            let commentError = document.getElementById('commentError');
+            if (!commentInput || commentInput.value.trim().length === 0) {
+                event.preventDefault();
+                if (commentError) {
+                    commentError.textContent = 'Comment cannot be empty';
+                }
+            } else {
+                if (commentError) {
+                    commentError.textContent = '';
+                }
+            }
+        });
+    }
+})();
+
