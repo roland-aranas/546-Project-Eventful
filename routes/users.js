@@ -217,4 +217,60 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+//POST new location
+router.post('/:id/location/current', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/users/login');
+    }
+
+    if (req.session.user._id !== req.params.id) {
+      return res.status(403).render('error', {error: 'You do not have permission to view this page'});
+    }
+
+    const lat = parseFloat(req.body.lat);
+    const lng = parseFloat(req.body.lng);
+
+    //close enough validation for NYC, will be checked again if user tries to find directions
+    if (isNaN(lat)|| isNaN(lng)|| lat < 40|| lat > 42|| lng < -75|| lng > -72) {
+      return res.status(400).render('error', {error: 'Invalid coordinates'});
+    }
+
+    await userData.updateUser(req.params.id, {currentLocation: {lat, lng}});
+
+    return res.redirect(`/users/${req.params.id}`);
+  } catch (e) {
+    return res.status(500).render('error', {error: e});
+  }
+});
+
+//POST new favorite location
+router.post('/:id/location/favorite', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.redirect('/users/login');
+    }
+
+    if (req.session.user._id !== req.params.id) {
+      return res.status(403).render('error', {error: 'You do not have permission to view this page'});
+    }
+
+    const lat = parseFloat(req.body.lat);
+    const lng = parseFloat(req.body.lng);
+
+    if (isNaN(lat)|| isNaN(lng)|| lat < 40|| lat > 42|| lng < -75|| lng > -72) {
+      return res.status(400).render('error', {error: 'Invalid coordinates'});
+    }
+
+    const user = await userData.getUserById(req.params.id);
+    const locations = [{lat, lng}].concat(user.favoriteLocations || []).slice(0, 3);
+
+    await userData.updateUser(req.params.id, {favoriteLocations: locations});
+
+    return res.redirect(`/users/${req.params.id}`);
+  } catch (e) {
+    return res.status(500).render('error', {error: e});
+  }
+});
+
 export default router;

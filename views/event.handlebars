@@ -104,6 +104,11 @@ isSaved
 
 <section class="map-container">
     <div id="map" style="height: 300px; width: 100%;"></div>
+    
+    <pre>currentLocation: {{currentLocation.lat}}, {{currentLocation.lng}}</pre>
+    {{#unless currentLocation}}
+    <p>Only showing park location since directions are invalid</p>
+    {{/unless}}
 
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
@@ -114,6 +119,14 @@ isSaved
         const parts = "{{{event.location.coordinates}}}".split(",");
         const lat = parseFloat(parts[0]);
         const lng = parseFloat(parts[1]);
+
+        {{#if currentLocation}}
+        const userLat = {{currentLocation.lat}};
+        const userLng = {{currentLocation.lng}};
+        {{else}}
+        const userLat = null;
+        const userLng = null;
+        {{/if}}
 
         if (!isNaN(lat) && !isNaN(lng)) {
             const map = new mapboxgl.Map({
@@ -129,7 +142,25 @@ isSaved
                 .addTo(map);
 
             map.addControl(new mapboxgl.NavigationControl());
-        }
+
+            // took this from online documentation and edited to fit the app lat/lng system
+            if (userLat !== null && userLng !== null) {
+                map.on('load', () => {
+                    fetch(`https://api.mapbox.com/directions/v5/mapbox/walking/${userLng},${userLat};${lng},${lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            if (!d.routes || !d.routes.length) return;
+
+                            map.addSource('route', {type: 'geojson', data: {type: 'Feature', geometry: d.routes[0].geometry} });
+                            map.addLayer({id: 'route', type: 'line', source: 'route', paint: {'line-color': '#3b82f6', 'line-width': 4} });
+
+                            new mapboxgl.Marker({color: 'green'}).setLngLat([userLng, userLat]).addTo(map);
+
+                            map.fitBounds([[userLng, userLat], [lng, lat]], {padding: 60});
+                        });
+                });
+            }
+            }
     </script>
 </section>
 

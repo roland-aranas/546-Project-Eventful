@@ -188,8 +188,18 @@ router.route('/:id').get(async (req, res) => {
         } catch {
             weather = null;
         }
+        
+        let currentLocation = null;
+        try {
+            if (req.session.user) {
+                const fullUser = await userData.getUserById(req.session.user._id);
+                currentLocation = fullUser.currentLocation || null;
+            }
+        } catch {
+            currentLocation = null;
+}
 
-        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN, weather});
+        return res.render('event', { event, isSaved, hasReported, hasLiked, hasDisliked, isAuthor, author, hasCheckedIn, canReview, mapboxToken: MAPBOX_TOKEN, weather, currentLocation});
     } catch (e) {
         return res.status(404).render('error', {error: e.message || e.toString()});
     }

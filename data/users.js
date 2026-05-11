@@ -159,6 +159,7 @@ let exportedMethods = {
             'firstName',
             'lastName',
             'age',
+            'currentLocation',
             'email',
             'username',
             'password',
@@ -180,7 +181,7 @@ let exportedMethods = {
                 throw `Error: ${trimmedKey} is not an updatable field`;
             }
 
-            if(typeof updates[trimmedKey] !== 'string' && trimmedKey !== 'isAdmin' && trimmedKey !== 'age' && trimmedKey !== 'favoriteLocations' && trimmedKey !== 'createdEvents' && trimmedKey !== 'savedEvents') {
+            if(typeof updates[trimmedKey] !== 'string' && trimmedKey !== 'isAdmin' && trimmedKey !== 'age' && trimmedKey !== 'favoriteLocations' && trimmedKey !== 'createdEvents' && trimmedKey !== 'savedEvents' && trimmedKey !== 'currentLocation') {
                 throw `Error: Update value for ${trimmedKey} must be a string`;
             }
             if(trimmedKey === 'isAdmin' && typeof updates[trimmedKey] !== 'boolean') {

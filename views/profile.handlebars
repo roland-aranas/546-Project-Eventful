@@ -14,11 +14,44 @@ ifIsOwnProfile
         <h3>Borough: {{user.borough}}</h3>
     </section>
 
-    <section class="fav-locations">
-        {{#each user.favoriteLocations}}
-        <p>{{this}}</p>
-        {{/each}}
+    {{#if isOwnProfile}}
+    <section class="card location-card">
+        <h3>Current Location</h3>
+        {{#if user.currentLocation}}
+            <p>{{user.currentLocation.lat}}, {{user.currentLocation.lng}}</p>
+        {{else}}
+            <p>No current location set</p>
+        {{/if}}
+        <form method="POST" action="/users/{{user._id}}/location/current">
+            <label for="lat">Latitude</label>
+            <input type="number" name="lat" id="lat" step="any" placeholder="40.7128">
+            <label for="lng">Longitude</label>
+            <input type="number" name="lng" id="lng" step="any" placeholder="-74.0060">
+            <button type="submit">Update</button>
+        </form>
     </section>
+
+    <section class="card location-card">
+        <h3>Favorite Locations</h3>
+        {{#if user.favoriteLocations.length}}
+            <h4>Saved Locations (3 most recent)</h4>
+
+            {{#each user.favoriteLocations}}
+                <p>{{this.lat}}, {{this.lng}}</p>
+            {{/each}}
+            
+        {{else}}
+            <p>No saved locations yet</p>
+        {{/if}}
+        <form method="POST" action="/users/{{user._id}}/location/favorite">
+            <label for="favLat">Latitude</label>
+            <input type="number" name="lat" id="favLat" step="any" placeholder="40.7128">
+            <label for="favLng">Longitude</label>
+            <input type="number" name="lng" id="favLng" step="any" placeholder="-74.0060">
+            <button type="submit">Save to Favorites</button>
+        </form>
+    </section>
+    {{/if}}
 
     <section class="planned-events card">
         <h3>Planned Events</h3>
