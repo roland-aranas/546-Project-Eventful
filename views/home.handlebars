@@ -47,9 +47,10 @@ user (current user)
   {{/if}}
 
   <section class="recommended card">
-{{#if user}}
+    <div class="section-header">
+  {{#if user}}
       <h2>Events Today in {{user.borough}}</h2>
-{{else}}
+  {{else}}
       <h2>Events Today in: </h2>
       <form method="GET" action="/events/home">
     <select name="borough">
@@ -61,17 +62,22 @@ user (current user)
     </select>
     <button type="submit">Go</button>
   </form>
-{{/if}}
+  {{/if}}
+  </div>
     {{#if todayByBorough.length}}
+      <div class="event-grid">
       {{#each todayByBorough}}
         <a href="/events/{{this._id}}" class="event-card">
           <img src="{{this.image}}" alt="{{this.title}}">
+          <div class="event-card-body">
           <h3>{{this.title}}</h3>
           <p class="description">{{this.description}}</p>
           <p class="startTime">Starts: {{this.startTime}}</p>
           <p class="endTime">Ends: {{this.endTime}}</p>
+          </div>
         </a>
       {{/each}}
+      </div>
     {{else}}
       <p>No events near you today.</p>
     {{/if}}
