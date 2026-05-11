@@ -58,20 +58,20 @@ ParkParty is a web application that helps users discover public events happening
 
 ## Setup Instructions
 
-### 1. Clone the Repository
+1. Clone the Repository
 
 ```bash
 git clone <repo-url>
 cd 546-Project-ParkParty
 ```
 
-### 2. Install Dependencies
+2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Create Environment File
+3. Create Environment File
 
 Create a `.env` file in the root directory:
 
@@ -82,20 +82,20 @@ MAPBOX_TOKEN=YOUR_MAPBOX_TOKEN
 To obtain a Mapbox token:
 1. Create an account at https://www.mapbox.com/
 2. Navigate to:
-   - Account → Tokens
+   - Account -> Tokens
 3. Copy your default public token
 
 ---
 
 ## Running the Application
 
-### Seed the Database
+Seed the Database
 
 ```bash
 npm run seed
 ```
 
-### Start the Server
+Start the Server
 
 ```bash
 npm start
@@ -107,15 +107,6 @@ Then open:
 http://localhost:3000
 ```
 
-
-1. Download the project or clone the repository and run `npm install` to install all dependencies. 
-2. Run `npm run seed` to populate database with events and users
-3. Create a `.env` file with the following:
-* MAPBOX_TOKEN={API_KEY_1}
-
-Grab API_KEY_1 from https://www.mapbox.com/ by signing up for an account. Replace {API_KEY_1} with the given api key under admin -> tokens -> default public token
-
-5. Run `npm run start` to start localhost and navigate to http://localhost:3000 (or default localhost)
 
 ## Demo Credentials
 
