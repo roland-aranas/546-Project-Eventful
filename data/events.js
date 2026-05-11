@@ -668,7 +668,7 @@ async function findTodayEvents() {
     //note that this probably isnt 100% accurate its just wherever mapbox decided where the boundaries were
     const eventCollection = await events();
     const todayEventsCollection = await todayEvent();
-    const today = new Date().toISOString().split('T')[0];
+    let today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 
     const todaysEvents = await eventCollection.find({startDate: today}).toArray();
 
@@ -712,7 +712,8 @@ async function getEventsByBorough(targetBorough) {
     }
 
     const todayEventsCollection = await todayEvent();
-    const today = new Date().toISOString().split('T')[0];
+    let today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+
 
     let eventList = await todayEventsCollection.findOne({ date: today });
 
