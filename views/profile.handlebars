@@ -56,24 +56,21 @@ ifIsOwnProfile
     <section class="planned-events card">
         <h3>Planned Events</h3>
         {{#each upcomingEvents}}
-        <div class="events-results">
+        <div class="event-results">
             <a href="/events/{{this._id}}" class="event-card">
-                <img src="{{this.image}}" alt="{{this.title}}">
+                {{#if this.image}}
+                    <img src="{{this.image}}" alt="{{this.title}}">
+                {{/if}}
                 <div class="event-card-body">
                     <h3>{{this.title}}</h3>
                     <p class="description">{{this.description}}</p>
                     {{#if this.endDate}}
-                        <p>{{event.startDate}} - {{event.endDate}}</p>
+                        <p>{{this.startDate}} - {{this.endDate}}</p>
                     {{else}}
-                        <p>{{event.startDate}}</p>
+                        <p>{{this.startDate}}</p>
                     {{/if}}
                 </div>
             </a>
-            {{#if isOwnProfile}}
-                <form action="/users/{{../user._id}}/savedEvents/{{this._id}}/remove" method="POST">
-                    <button type="submit">Unsave</button>
-                </form>
-            {{/if}}
         </div>
         {{else}}
             <p>No planned events yet.</p>
@@ -87,7 +84,9 @@ ifIsOwnProfile
         {{#each pastEvents}}
             <div class="past-event-wrapper">
                 <a href="/events/{{this._id}}" class="event-card past-event-card">
-                    <img src="{{this.image}}" alt="{{this.title}}">
+                    {{#if this.image}}
+                        <img src="{{this.image}}" alt="{{this.title}}">
+                    {{/if}}
 
                     <div class="event-card-body">
                         <h3>{{this.title}}</h3>
@@ -118,7 +117,9 @@ ifIsOwnProfile
         <h3>Events created by {{user.firstName}}</h3>
         {{#each createdEvents}}
             <a href="/events/{{this._id}}" class="event-card">
-                <img src="{{this.image}}" alt="{{this.title}}">
+                {{#if this.image}}
+                    <img src="{{this.image}}" alt="{{this.title}}">
+                {{/if}}
                 <div class="event-card-body">
                     <h3>{{this.title}}</h3>
                     <p class="description">{{this.description}}</p>
@@ -133,14 +134,4 @@ ifIsOwnProfile
             <p>No created events yet.</p>
         {{/each}}
     </section>
-
-    {{!-- <section class="footer card profile-footer">
-        <footer> 
-            {{#if isOwnProfile}}
-                <p>{{user.email}}</p>
-                <a href="/users/{{user._id}}/edit">Edit Profile</a>
-                <button>Delete Account</button>
-            {{/if}}
-        </footer>
-    </section> --}}
 </main>

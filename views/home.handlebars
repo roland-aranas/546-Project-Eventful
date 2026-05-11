@@ -23,23 +23,30 @@ user (current user)
 {{/if}}
 
 {{#if user}}
-  <section class="next_event card">
+  <section class="next-event card">
     <h3>Your Next Event: </h3>
     {{#if nextEvent}}
+    <div class="next-event-wrapper">
       <a href="/events/{{nextEvent._id}}" class="event-card">
-        <img src="{{nextEvent.image}}" alt="{{nextEvent.title}}">
-        <h3>{{nextEvent.title}}</h3>
-        <p class="description">{{nextEvent.description}}</p>
-        <p class="startTime">Starts: {{nextEvent.startTime}}</p>
-        <p class="endTime">Ends: {{nextEvent.endTime}}</p>
-        {{#if hasCheckedIn}}
-          <p>You have checked in to this event.</p>
-        {{else}}
-          <form method="POST" action="/events/{{nextEvent._id}}/checkin">
-            <button type="submit">Check In</button>
-          </form>
+        {{#if event.image}}
+          <img src="{{event.image}}" alt="{{event.title}}">
         {{/if}}
-    </a>
+        <div class="event-card-body">
+          <h3>{{nextEvent.title}}</h3>
+          <p class="description">{{nextEvent.description}}</p>
+          <p class="startTime">Starts: {{nextEvent.startTime}}</p>
+          <p class="endTime">Ends: {{nextEvent.endTime}}</p>
+          {{#if hasCheckedIn}}
+            <p>You have checked in to this event.</p>
+          {{/if}}
+        </div>
+      </a>
+    {{#unless hasCheckedIn}}
+        <form method="POST" action="/events/{{nextEvent._id}}/checkin" class="checkin-form">
+          <button type="submit">Check In</button>
+        </form>
+      {{/unless}}
+    </div>
     {{else}}
     <p>No Events Planned Today!</p>
     {{/if}}
@@ -68,7 +75,9 @@ user (current user)
       <div class="event-grid">
       {{#each todayByBorough}}
         <a href="/events/{{this._id}}" class="event-card">
-          <img src="{{this.image}}" alt="{{this.title}}">
+          {{#if this.image}}
+            <img src="{{this.image}}" alt="{{this.title}}">
+          {{/if}}
           <div class="event-card-body">
           <h3>{{this.title}}</h3>
           <p class="description">{{this.description}}</p>

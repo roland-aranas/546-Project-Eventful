@@ -205,6 +205,23 @@ h1, h2, h3, h4 {
   margin-bottom: 0.75rem;
 }
 
+.next-event-wrapper {
+  padding: 0.5rem;
+}
+
+.next-event-wrapper .event-card {
+  margin-bottom: 0.75rem;
+}
+
+.checkin-form {
+  padding: 0 0.25rem 0.25rem 0.25rem;
+}
+
+.next_event.card {
+  padding: 1.5rem;
+}
+
+
 .review-link {
   display: inline-block;
   background-color: #244d2f;
